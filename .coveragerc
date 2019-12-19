@@ -1,0 +1,3 @@
+[run]
+source = heath
+omit = heath/test*
