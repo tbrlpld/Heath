@@ -12,7 +12,7 @@ def dummy_request(dbsession):
 class BaseTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(settings={
-            'sqlalchemy.url': 'sqlite:///:memory:'
+            'sqlalchemy.url': 'sqlite:///:memory:',
         })
         self.config.include('heath.models')
         settings = self.config.get_settings()
@@ -21,7 +21,7 @@ class BaseTest(unittest.TestCase):
             get_engine,
             get_session_factory,
             get_tm_session,
-            )
+        )
 
         self.engine = get_engine(settings)
         session_factory = get_session_factory(self.engine)
@@ -38,3 +38,17 @@ class BaseTest(unittest.TestCase):
         testing.tearDown()
         transaction.abort()
         Base.metadata.drop_all(self.engine)
+
+
+class FunctionalBaseTest(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp(settings={
+            'sqlalchemy.url': 'sqlite:///:memory:',
+        })
+        settings = self.config.get_settings()
+
+        from heath import main
+        app = main({}, **settings)
+
+        from webtest import TestApp
+        self.testapp = TestApp(app)
