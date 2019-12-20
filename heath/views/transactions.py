@@ -9,7 +9,7 @@ from pyramid.view import view_config
 
 @view_config(
     route_name="transaction_create",
-    renderer="../templates/transactions/create.jinja2",
+    renderer="heath:templates/transactions/create.jinja2",
 )
 def create(request: Request) -> Response:
     return {}
