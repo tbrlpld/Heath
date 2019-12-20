@@ -2,6 +2,7 @@
 
 """Tests for the transaction views."""
 
+from heath.models.transaction import Transaction
 
 from ..base import BaseTest, dummy_request, FunctionalBaseTest
 
@@ -14,6 +15,8 @@ class TestCreateTransactionViewFunction(BaseTest):
         self.assertEqual(return_data, {})
 
     def test_post_to_create_view(self):
+        self.init_database()
+
         from heath.views.transactions import create
 
         req = dummy_request(
@@ -26,6 +29,11 @@ class TestCreateTransactionViewFunction(BaseTest):
         return_data = create(req)
         self.assertIn("message", return_data)
         self.assertEqual(return_data["message"], "Transaction created")
+
+        first_transaction = req.dbsession.query(Transaction).first()
+        print(first_transaction)
+        self.assertEqual(first_transaction.description, "New Transaction")
+        self.assertEqual(first_transaction.amount, 100)
 
 
 class FunctionalTestCreateTransactionView(FunctionalBaseTest):

@@ -15,6 +15,5 @@ from pyramid.view import view_config
 )
 def create(request: Request) -> Dict:
     if request.method == "POST":
-        print(request.POST)
         return {"message": "Transaction created"}
     return {}
