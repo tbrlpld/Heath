@@ -32,6 +32,7 @@ class TestCreateTransactionViewFunction(BaseTest):
 
         first_transaction = req.dbsession.query(Transaction).first()
         print(first_transaction)
+        self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "New Transaction")
         self.assertEqual(first_transaction.amount, 100)
 
