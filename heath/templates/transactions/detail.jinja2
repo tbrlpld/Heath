@@ -1,0 +1,12 @@
+{% extends "heath:templates/base.jinja2" %}
+
+{% block content %}
+  <h1>Transaction</h1>
+
+  <label for="description">Description</label>
+  <span type="text" name="description">{{ transaction.description }}</span>
+  <br>
+  <label for="amount">Amount</label>
+  <span type="number" name="amount">{{ transaction.amount | round(2) }}</span>
+  <br>
+{% endblock content %}

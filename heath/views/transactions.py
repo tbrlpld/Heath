@@ -44,6 +44,10 @@ def transactions_list(request: Request) -> Dict:
     }
 
 
+@view_config(
+    route_name="transaction_detail",
+    renderer="heath:templates/transactions/detail.jinja2",
+)
 def detail(request: Request) -> Union[Dict, HTTPNotFound]:
     transaction_id = request.matchdict.get("transaction_id")
 
@@ -51,5 +55,5 @@ def detail(request: Request) -> Union[Dict, HTTPNotFound]:
     transaction = session.query(Transaction).filter_by(id=transaction_id).first()
 
     if not transaction:
-        return HTTPNotFound
+        return HTTPNotFound()
     return {"transaction": transaction}
