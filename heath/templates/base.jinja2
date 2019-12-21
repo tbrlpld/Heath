@@ -27,8 +27,8 @@
     <div class="container">
       <nav>
         <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/list">List</a></li>
+          <li><a href="{{ request.route_url('home') }}">Home</a></li>
+          <li><a href="{{ request.route_url('transactions_list') }}">List</a></li>
         </ul>
       </nav>
       {% block content %}
