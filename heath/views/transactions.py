@@ -48,7 +48,7 @@ def transactions_list(request: Request) -> Dict:
     route_name="transaction_detail",
     renderer="heath:templates/transactions/detail.jinja2",
 )
-def detail(request: Request) -> Union[Dict, HTTPNotFound]:
+def detail(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
 
     session = request.dbsession
@@ -56,4 +56,18 @@ def detail(request: Request) -> Union[Dict, HTTPNotFound]:
 
     if not transaction:
         raise HTTPNotFound()
+    return {"transaction": transaction}
+
+
+def edit(request: Request) -> Dict:
+    transaction_id = request.matchdict.get("transaction_id")
+    session = request.dbsession
+    transaction = session.query(Transaction).filter_by(
+        id=transaction_id,
+    ).first()
+    if not transaction:
+        raise HTTPNotFound()
+    if request.method == "POST":
+        transaction.description = request.POST["description"]
+        transaction.amount = float(request.POST["amount"])
     return {"transaction": transaction}

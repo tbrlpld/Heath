@@ -19,19 +19,19 @@ class TestCreateTransactionViewFunction(BaseTest):
 
         from heath.views.transactions import create
 
-        req = dummy_request(
+        request = dummy_request(
             dbsession=self.session,
             post={
                 "description": "New Transaction",
-                "amount": "100",
+                "amount": 100.00,
             },
         )
-        return_data = create(req)
+        create(request)
 
-        first_transaction = req.dbsession.query(Transaction).first()
+        first_transaction = self.session.query(Transaction).first()
         self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "New Transaction")
-        self.assertEqual(first_transaction.amount, 100)
+        self.assertEqual(first_transaction.amount, 100.00)
 
     # TODO: Add test for negative amount
 
@@ -54,11 +54,11 @@ class TestTransactionsListView(BaseTest):
         session = self.session
         self.first_transaction = Transaction(
             description="First transaction",
-            amount="100",
+            amount=100.00,
         )
         self.second_transaction = Transaction(
             description="Second transaction",
-            amount="-40",
+            amount=-40.00,
         )
         session.add(self.first_transaction)
         session.add(self.second_transaction)
@@ -98,6 +98,7 @@ class TestTransactionsListView(BaseTest):
             60,
         )
 
+
 # Functional:
 # class FunctionaltTestTransactionsListView(FunctionalBaseTest):
 # TODO: Add test for transaction descriptions in list view.
@@ -110,6 +111,7 @@ class TestTransactionsListView(BaseTest):
 # TODO: Add test for link to detail pages
 # TODO: Add test for link to create transaction page
 
+
 class TestTransactionDetailView(BaseTest):
     def setUp(self):
         super().setUp()
@@ -117,14 +119,9 @@ class TestTransactionDetailView(BaseTest):
         session = self.session
         self.first_transaction = Transaction(
             description="First transaction",
-            amount="100",
-        )
-        self.second_transaction = Transaction(
-            description="Second transaction",
-            amount="-40",
+            amount=100.00,
         )
         session.add(self.first_transaction)
-        session.add(self.second_transaction)
 
     def test_show_only_one_transaction(self):
         request = dummy_request(self.session)
@@ -136,9 +133,9 @@ class TestTransactionDetailView(BaseTest):
         self.assertIn("transaction", return_data)
         self.assertEqual(return_data["transaction"].id, 1)
         self.assertEqual(
-            return_data["transaction"].description, "First transaction"
+            return_data["transaction"].description, "First transaction",
         )
-        self.assertEqual(return_data["transaction"].amount, "100")
+        self.assertEqual(return_data["transaction"].amount, 100.00)
 
     def test_404_when_not_existing(self):
         request = dummy_request(self.session)
@@ -150,3 +147,55 @@ class TestTransactionDetailView(BaseTest):
             detail(request)
 
 
+class TestTransactionEditView(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.init_database()
+        session = self.session
+        self.first_transaction = Transaction(
+            description="First transaction",
+            amount=100.00,
+        )
+        session.add(self.first_transaction)
+
+    def test_show_only_one_transaction(self):
+        request = dummy_request(self.session)
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import edit
+        return_data = edit(request)
+
+        self.assertIn("transaction", return_data)
+        self.assertEqual(return_data["transaction"].id, 1)
+        self.assertEqual(
+            return_data["transaction"].description, "First transaction",
+        )
+        self.assertEqual(return_data["transaction"].amount, 100.00)
+
+    def test_404_when_not_existing(self):
+        request = dummy_request(self.session)
+        request.matchdict["transaction_id"] = 3
+
+        from pyramid.httpexceptions import HTTPNotFound
+        from heath.views.transactions import edit
+        with self.assertRaises(HTTPNotFound):
+            edit(request)
+
+
+    def test_post_updates_information(self):
+        request = dummy_request(
+            dbsession=self.session,
+            post={
+                "description": "The First Transaction",
+                "amount": 123.00,
+            },
+        )
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import edit
+        edit(request)
+
+        first_transaction = self.session.query(Transaction).first()
+        self.assertEqual(first_transaction.id, 1)
+        self.assertEqual(first_transaction.description, "The First Transaction")
+        self.assertEqual(first_transaction.amount, 123.00)
