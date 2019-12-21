@@ -55,5 +55,5 @@ def detail(request: Request) -> Union[Dict, HTTPNotFound]:
     transaction = session.query(Transaction).filter_by(id=transaction_id).first()
 
     if not transaction:
-        return HTTPNotFound()
+        raise HTTPNotFound()
     return {"transaction": transaction}

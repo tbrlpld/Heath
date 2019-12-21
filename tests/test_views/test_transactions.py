@@ -144,8 +144,9 @@ class TestTransactionDetailView(BaseTest):
         request = dummy_request(self.session)
         request.matchdict["transaction_id"] = 3
 
+        from pyramid.httpexceptions import HTTPNotFound
         from heath.views.transactions import detail
-        return_data = detail(request)
+        with self.assertRaises(HTTPNotFound):
+            detail(request)
 
-        self.assertEqual(return_data.code, 404)
 
