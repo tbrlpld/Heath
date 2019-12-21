@@ -27,6 +27,10 @@ def create(request: Request) -> Dict:
     return {}
 
 
+@view_config(
+    route_name="transactions_list",
+    renderer="heath:templates/transactions/list.jinja2",
+)
 def transactions_list(request: Request) -> Dict:
     session = request.dbsession
     transactions = session.query(Transaction).all()

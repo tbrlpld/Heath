@@ -79,7 +79,7 @@ class TestTransactionsListView(BaseTest):
 
 # Functional:
 class FunctionaltTestTransactionsListView(FunctionalBaseTest):
-    def test_description_and_amount_in_list_view(self):
+    def test_list_url(self):
         resp = self.testapp.get("/list")
         self.assertEqual(resp.status_code, 200)
 

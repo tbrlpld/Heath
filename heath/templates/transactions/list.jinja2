@@ -1,0 +1,7 @@
+{% extends "heath:templates/base.jinja2" %}
+
+{% block content %}
+  {% for transaction in transactions %}
+    <p>{{ transaction.description }}</p>
+  {% endfor %}
+{% endblock content %}
