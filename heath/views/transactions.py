@@ -76,3 +76,21 @@ def edit(request: Request) -> Dict:
         transaction.amount = float(request.POST["amount"])
         return HTTPFound(location="/list")
     return {"transaction": transaction}
+
+
+# @view_config(
+#     route_name="transaction_edit",
+#     renderer="heath:templates/transactions/edit.jinja2",
+# )
+def delete(request: Request) -> Dict:
+    transaction_id = request.matchdict.get("transaction_id")
+    session = request.dbsession
+    transaction = session.query(Transaction).filter_by(
+        id=transaction_id,
+    ).first()
+    if not transaction:
+        raise HTTPNotFound()
+    if request.method == "POST":
+        session.delete(transaction)
+        return HTTPFound(location="/list")
+    return {"transaction": transaction}

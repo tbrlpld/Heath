@@ -199,3 +199,54 @@ class TestTransactionEditView(BaseTest):
         self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "The First Transaction")
         self.assertEqual(first_transaction.amount, 123.00)
+
+
+class TestTransactionDeleteView(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.init_database()
+        session = self.session
+        self.first_transaction = Transaction(
+            description="First transaction",
+            amount=100.00,
+        )
+        session.add(self.first_transaction)
+
+    def test_show_only_one_transaction(self):
+        request = dummy_request(self.session)
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import delete
+        return_data = delete(request)
+
+        self.assertIn("transaction", return_data)
+        self.assertEqual(return_data["transaction"].id, 1)
+        self.assertEqual(
+            return_data["transaction"].description, "First transaction",
+        )
+        self.assertEqual(return_data["transaction"].amount, 100.00)
+
+    def test_404_when_not_existing(self):
+        request = dummy_request(self.session)
+        request.matchdict["transaction_id"] = 3
+
+        from pyramid.httpexceptions import HTTPNotFound
+        from heath.views.transactions import delete
+        with self.assertRaises(HTTPNotFound):
+            delete(request)
+
+    def test_post_deletes_transaction(self):
+        request = dummy_request(
+            dbsession=self.session,
+            post={
+                "description": "The First Transaction",
+                "amount": 123.00,
+            },
+        )
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import delete
+        delete(request)
+
+        first_transaction = self.session.query(Transaction).first()
+        self.assertEqual(first_transaction, None)
