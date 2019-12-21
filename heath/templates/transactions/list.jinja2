@@ -14,7 +14,7 @@
     <tbody>
       {% for transaction in transactions %}
         <tr>
-          <td>{{ transaction.description }}</td>
+          <td><a href="{{ request.route_url('transaction_detail', transaction_id=transaction.id) }}">{{ transaction.description }}</a></td>
           <td>{{ transaction.amount | round(2) }}</td>
         </tr>
       {% endfor %}
