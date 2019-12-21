@@ -25,7 +25,7 @@ def create(request: Request) -> Dict:
         )
         session = request.dbsession
         session.add(transaction)
-        return HTTPFound(location=request.route_url("transactions_list"))
+        return HTTPFound(location="/list")
     return {}
 
 
@@ -74,5 +74,5 @@ def edit(request: Request) -> Dict:
     if request.method == "POST":
         transaction.description = request.POST["description"]
         transaction.amount = float(request.POST["amount"])
-        return HTTPFound(location=request.route_url("transactions_list"))
+        return HTTPFound(location="/list")
     return {"transaction": transaction}
