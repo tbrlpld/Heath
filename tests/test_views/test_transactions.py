@@ -74,6 +74,21 @@ class TestTransactionsListView(BaseTest):
         self.assertIn(self.first_transaction, return_data["transactions"])
         self.assertIn(self.second_transaction, return_data["transactions"])
 
+    def test_transactions_in_reverse_order(self):
+        from heath.views.transactions import transactions_list
+        req = dummy_request(dbsession=self.session)
+        return_data = transactions_list(req)
+
+        self.assertEqual(
+            self.second_transaction,
+            return_data["transactions"][0],
+        )
+        self.assertEqual(
+            self.first_transaction,
+            return_data["transactions"][1],
+        )
+
+
     # TODO: Test order of transactions (last transaction first in list)
     # TODO: Add test for remaining budget returned
 
