@@ -2,7 +2,7 @@
 
 {% block content %}
   <p>
-    Buget: {{ budget | round(2) }}
+    Budget: {{ budget | round(2) }}
   </p>
   <table>
     <thead>
@@ -14,13 +14,13 @@
     <tbody>
       {% for transaction in transactions %}
         <tr>
-          <td>{{ transaction.description }}</td>
+          <td><a href="{{ request.route_url('transaction_detail', transaction_id=transaction.id) }}">{{ transaction.description }}</a></td>
           <td>{{ transaction.amount | round(2) }}</td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
   <p>
-    <a href="/create">Add New Transaction</a>
+    <a href="{{ request.route_url('transaction_create') }}">Add New Transaction</a>
   </p>
 {% endblock content %}

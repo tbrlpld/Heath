@@ -4,7 +4,7 @@
 
 from typing import Dict, Union
 
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -42,3 +42,55 @@ def transactions_list(request: Request) -> Dict:
         "transactions": transactions,
         "budget": budget,
     }
+
+
+@view_config(
+    route_name="transaction_detail",
+    renderer="heath:templates/transactions/detail.jinja2",
+)
+def detail(request: Request) -> Dict:
+    transaction_id = request.matchdict.get("transaction_id")
+
+    session = request.dbsession
+    transaction = session.query(Transaction).filter_by(id=transaction_id).first()
+
+    if not transaction:
+        raise HTTPNotFound()
+    return {"transaction": transaction}
+
+
+@view_config(
+    route_name="transaction_edit",
+    renderer="heath:templates/transactions/edit.jinja2",
+)
+def edit(request: Request) -> Dict:
+    transaction_id = request.matchdict.get("transaction_id")
+    session = request.dbsession
+    transaction = session.query(Transaction).filter_by(
+        id=transaction_id,
+    ).first()
+    if not transaction:
+        raise HTTPNotFound()
+    if request.method == "POST":
+        transaction.description = request.POST["description"]
+        transaction.amount = float(request.POST["amount"])
+        return HTTPFound(location="/list")
+    return {"transaction": transaction}
+
+
+@view_config(
+    route_name="transaction_delete",
+    renderer="heath:templates/transactions/delete.jinja2",
+)
+def delete(request: Request) -> Dict:
+    transaction_id = request.matchdict.get("transaction_id")
+    session = request.dbsession
+    transaction = session.query(Transaction).filter_by(
+        id=transaction_id,
+    ).first()
+    if not transaction:
+        raise HTTPNotFound()
+    if request.method == "POST":
+        session.delete(transaction)
+        return HTTPFound(location="/list")
+    return {"transaction": transaction}

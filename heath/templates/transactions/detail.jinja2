@@ -1,0 +1,14 @@
+{% extends "heath:templates/base.jinja2" %}
+
+{% block content %}
+  <h1>Transaction</h1>
+
+  <label for="description">Description</label>
+  <span type="text" name="description">{{ transaction.description }}</span>
+  <br>
+  <label for="amount">Amount</label>
+  <span type="number" name="amount">{{ transaction.amount | round(2) }}</span>
+  <br>
+  <a href="{{ request.route_url('transaction_edit', transaction_id=transaction.id) }}">Edit</a>
+  <a href="{{ request.route_url('transaction_delete', transaction_id=transaction.id) }}">Delete</a>
+{% endblock content %}
