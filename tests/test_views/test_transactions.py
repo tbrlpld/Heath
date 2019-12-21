@@ -27,8 +27,6 @@ class TestCreateTransactionViewFunction(BaseTest):
             },
         )
         return_data = create(req)
-        self.assertIn("message", return_data)
-        self.assertEqual(return_data["message"], "Transaction created")
 
         first_transaction = req.dbsession.query(Transaction).first()
         self.assertEqual(first_transaction.id, 1)

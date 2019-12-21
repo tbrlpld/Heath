@@ -2,8 +2,9 @@
 
 """Define views regarding transactions."""
 
-from typing import Dict
+from typing import Dict, Union
 
+from pyramid.httpexceptions import HTTPFound
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -24,7 +25,7 @@ def create(request: Request) -> Dict:
         )
         session = request.dbsession
         session.add(transaction)
-        return {"message": "Transaction created"}
+        return HTTPFound(location="/list")
     return {}
 
 
