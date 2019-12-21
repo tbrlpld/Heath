@@ -7,6 +7,7 @@ from typing import Dict
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
+from sqlalchemy.sql import func
 
 from heath.models.transaction import Transaction
 
@@ -35,4 +36,8 @@ def transactions_list(request: Request) -> Dict:
     session = request.dbsession
     query = session.query(Transaction)
     transactions = query.order_by(Transaction.created.desc()).all()
-    return {"transactions": transactions}
+    budget = session.query(func.sum(Transaction.amount)).scalar()
+    return {
+        "transactions": transactions,
+        "budget": budget,
+    }
