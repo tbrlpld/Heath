@@ -9,4 +9,5 @@
   <label for="amount">Amount</label>
   <span type="number" name="amount">{{ transaction.amount | round(2) }}</span>
   <br>
+  <a href="{{ request.route_url('transaction_edit', transaction_id=transaction.id) }}">Edit</a>
 {% endblock content %}
