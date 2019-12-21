@@ -2,13 +2,16 @@
 
 """Define views regarding transactions."""
 
-from typing import Dict
+from typing import Dict, Union
 
+from pyramid.httpexceptions import HTTPFound
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
+from sqlalchemy.sql import func
 
 from heath.models.transaction import Transaction
+
 
 @view_config(
     route_name="transaction_create",
@@ -22,5 +25,20 @@ def create(request: Request) -> Dict:
         )
         session = request.dbsession
         session.add(transaction)
-        return {"message": "Transaction created"}
+        return HTTPFound(location="/list")
     return {}
+
+
+@view_config(
+    route_name="transactions_list",
+    renderer="heath:templates/transactions/list.jinja2",
+)
+def transactions_list(request: Request) -> Dict:
+    session = request.dbsession
+    query = session.query(Transaction)
+    transactions = query.order_by(Transaction.created.desc()).all()
+    budget = session.query(func.sum(Transaction.amount)).scalar()
+    return {
+        "transactions": transactions,
+        "budget": budget,
+    }
