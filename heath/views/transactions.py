@@ -34,5 +34,5 @@ def create(request: Request) -> Dict:
 def transactions_list(request: Request) -> Dict:
     session = request.dbsession
     query = session.query(Transaction)
-    transactions = query.order_by(Transaction.id.desc()).all()
+    transactions = query.order_by(Transaction.created.desc()).all()
     return {"transactions": transactions}
