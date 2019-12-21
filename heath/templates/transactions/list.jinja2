@@ -1,23 +1,26 @@
 {% extends "heath:templates/base.jinja2" %}
 
 {% block content %}
-    <table>
-      <thead>
+  <p>
+    Buget: {{ budget | round(2) }}
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transaction in transactions %}
         <tr>
-          <th>Description</th>
-          <th>Amount</th>
+          <td>{{ transaction.description }}</td>
+          <td>{{ transaction.amount | round(2) }}</td>
         </tr>
-      </thead>
-      <tbody>
-        {% for transaction in transactions %}
-          <tr>
-            <td>{{ transaction.description }}</td>
-            <td>{{ transaction.amount | round(2) }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <p>
-      <a href="/create">Add New Transaction</a>
-    </p>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p>
+    <a href="/create">Add New Transaction</a>
+  </p>
 {% endblock content %}
