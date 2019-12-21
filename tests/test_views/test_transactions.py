@@ -50,32 +50,35 @@ class FunctionalTestCreateTransactionView(FunctionalBaseTest):
 
 
 class TestTransactionsListView(BaseTest):
-    def test_all_transactions_returned(self):
+    def setUp(self):
+        super().setUp()
         self.init_database()
         session = self.session
-        first_transaction = Transaction(
+        self.first_transaction = Transaction(
             description="First transaction",
             amount="100",
         )
-        second_transaction = Transaction(
+        self.second_transaction = Transaction(
             description="Second transaction",
             amount="-40",
         )
-        session.add(first_transaction)
-        session.add(second_transaction)
+        session.add(self.first_transaction)
+        session.add(self.second_transaction)
 
+    def test_all_transactions_returned(self):
         from heath.views.transactions import transactions_list
         req = dummy_request(dbsession=self.session)
         return_data = transactions_list(req)
 
         self.assertIn("transactions", return_data)
-        self.assertIn(first_transaction, return_data["transactions"])
-        self.assertIn(second_transaction, return_data["transactions"])
+        self.assertIn(self.first_transaction, return_data["transactions"])
+        self.assertIn(self.second_transaction, return_data["transactions"])
 
     # TODO: Test order of transactions (last transaction first in list)
     # TODO: Add test for remaining budget returned
 
 # Functional:
+# class FunctionaltTestTransactionsListView(FunctionalBaseTest):
 # TODO: Add test for transaction descriptions in list view
 # TODO: Add test for link to detail pages
 # TODO: Add test for link to create transaction page
