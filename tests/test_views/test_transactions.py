@@ -78,7 +78,11 @@ class TestTransactionsListView(BaseTest):
     # TODO: Add test for remaining budget returned
 
 # Functional:
-# class FunctionaltTestTransactionsListView(FunctionalBaseTest):
+class FunctionaltTestTransactionsListView(FunctionalBaseTest):
+    def test_description_and_amount_in_list_view(self):
+        resp = self.testapp.get("/list")
+        self.assertEqual(resp.status_code, 200)
+
 # TODO: Add test for transaction descriptions in list view
 # TODO: Add test for link to detail pages
 # TODO: Add test for link to create transaction page
