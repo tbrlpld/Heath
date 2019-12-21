@@ -4,7 +4,7 @@
 
 from typing import Dict, Union
 
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -42,3 +42,14 @@ def transactions_list(request: Request) -> Dict:
         "transactions": transactions,
         "budget": budget,
     }
+
+
+def detail(request: Request) -> Union[Dict, HTTPNotFound]:
+    transaction_id = request.matchdict.get("transaction_id")
+
+    session = request.dbsession
+    transaction = session.query(Transaction).filter_by(id=transaction_id).first()
+
+    if not transaction:
+        return HTTPNotFound
+    return {"transaction": transaction}

@@ -109,3 +109,43 @@ class TestTransactionsListView(BaseTest):
 #         self.assertEqual(resp.status_code, 200)
 # TODO: Add test for link to detail pages
 # TODO: Add test for link to create transaction page
+
+class TestTransactionDetailView(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.init_database()
+        session = self.session
+        self.first_transaction = Transaction(
+            description="First transaction",
+            amount="100",
+        )
+        self.second_transaction = Transaction(
+            description="Second transaction",
+            amount="-40",
+        )
+        session.add(self.first_transaction)
+        session.add(self.second_transaction)
+
+    def test_show_only_one_transaction(self):
+        request = dummy_request(self.session)
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import detail
+        return_data = detail(request)
+
+        self.assertIn("transaction", return_data)
+        self.assertEqual(return_data["transaction"].id, 1)
+        self.assertEqual(
+            return_data["transaction"].description, "First transaction"
+        )
+        self.assertEqual(return_data["transaction"].amount, "100")
+
+    def test_404_when_not_existing(self):
+        request = dummy_request(self.session)
+        request.matchdict["transaction_id"] = 3
+
+        from heath.views.transactions import detail
+        return_data = detail(request)
+
+        self.assertEqual(return_data.code, 404)
+
