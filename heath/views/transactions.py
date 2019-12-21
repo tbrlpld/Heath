@@ -10,6 +10,7 @@ from pyramid.view import view_config
 
 from heath.models.transaction import Transaction
 
+
 @view_config(
     route_name="transaction_create",
     renderer="heath:templates/transactions/create.jinja2",
@@ -24,3 +25,9 @@ def create(request: Request) -> Dict:
         session.add(transaction)
         return {"message": "Transaction created"}
     return {}
+
+
+def transactions_list(request: Request) -> Dict:
+    session = request.dbsession
+    transactions = session.query(Transaction).all()
+    return {"transactions": transactions}

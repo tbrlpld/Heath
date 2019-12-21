@@ -52,6 +52,7 @@ class FunctionalTestCreateTransactionView(FunctionalBaseTest):
 class TestTransactionsListView(BaseTest):
     def test_all_transactions_returned(self):
         self.init_database()
+        session = self.session
         first_transaction = Transaction(
             description="First transaction",
             amount="100",
@@ -60,9 +61,8 @@ class TestTransactionsListView(BaseTest):
             description="Second transaction",
             amount="-40",
         )
-        self.session.add(first_transaction)
-        self.session.add(second_transaction)
-        # self.session.commit()
+        session.add(first_transaction)
+        session.add(second_transaction)
 
         from heath.views.transactions import transactions_list
         req = dummy_request(dbsession=self.session)
