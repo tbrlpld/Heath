@@ -31,10 +31,11 @@ class TestCreateTransactionViewFunction(BaseTest):
         self.assertEqual(return_data["message"], "Transaction created")
 
         first_transaction = req.dbsession.query(Transaction).first()
-        print(first_transaction)
         self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "New Transaction")
         self.assertEqual(first_transaction.amount, 100)
+
+    # TODO: Add test for negative amount
 
 
 class FunctionalTestCreateTransactionView(FunctionalBaseTest):
@@ -46,3 +47,35 @@ class FunctionalTestCreateTransactionView(FunctionalBaseTest):
         self.assertIn(b'name="description"', resp.body)
         self.assertIn(b'name="amount"', resp.body)
         self.assertIn(b'step="0.01"', resp.body)
+
+
+class TestTransactionsListView(BaseTest):
+    def test_all_transactions_returned(self):
+        self.init_database()
+        first_transaction = Transaction(
+            description="First transaction",
+            amount="100",
+        )
+        second_transaction = Transaction(
+            description="Second transaction",
+            amount="-40",
+        )
+        self.session.add(first_transaction)
+        self.session.add(second_transaction)
+        # self.session.commit()
+
+        from heath.views.transactions import transactions_list
+        req = dummy_request(dbsession=self.session)
+        return_data = transactions_list(req)
+
+        self.assertIn("transactions", return_data)
+        self.assertIn(first_transaction, return_data["transactions"])
+        self.assertIn(second_transaction, return_data["transactions"])
+
+    # TODO: Test order of transactions (last transaction first in list)
+    # TODO: Add test for remaining budget returned
+
+# Functional:
+# TODO: Add test for transaction descriptions in list view
+# TODO: Add test for link to detail pages
+# TODO: Add test for link to create transaction page
