@@ -24,15 +24,17 @@
   </head>
 
   <body>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/list">List</a></li>
-      </ul>
-    </nav>
-    {% block content %}
-        <p>No content</p>
-    {% endblock content %}
+    <div class="container">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/list">List</a></li>
+        </ul>
+      </nav>
+      {% block content %}
+          <p>No content</p>
+      {% endblock content %}
+    </div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
