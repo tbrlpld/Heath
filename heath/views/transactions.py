@@ -78,10 +78,10 @@ def edit(request: Request) -> Dict:
     return {"transaction": transaction}
 
 
-# @view_config(
-#     route_name="transaction_edit",
-#     renderer="heath:templates/transactions/edit.jinja2",
-# )
+@view_config(
+    route_name="transaction_delete",
+    renderer="heath:templates/transactions/delete.jinja2",
+)
 def delete(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
     session = request.dbsession
