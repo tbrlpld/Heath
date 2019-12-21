@@ -12,5 +12,5 @@
   <form method="post" action="">
     <input type="submit" name="delete" value="Delete">
   </form>
-    <a href="{{ request.route_url('transactions_list') }}">Cancel</a>
+    <a href="{{ request.route_url('transaction_detail', transaction_id=transaction.id) }}">Cancel</a>
 {% endblock content %}

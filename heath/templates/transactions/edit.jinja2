@@ -11,4 +11,5 @@
     <br>
     <input type="submit" name="submit" value="Update">
   </form>
+    <a href="{{ request.route_url('transaction_detail', transaction_id=transaction.id) }}">Cancel</a>
 {% endblock content %}
