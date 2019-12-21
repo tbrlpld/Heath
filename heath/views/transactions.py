@@ -25,7 +25,7 @@ def create(request: Request) -> Dict:
         )
         session = request.dbsession
         session.add(transaction)
-        return HTTPFound(location="/list")
+        return HTTPFound(location=request.route_url("transactions_list"))
     return {}
 
 
@@ -59,6 +59,10 @@ def detail(request: Request) -> Dict:
     return {"transaction": transaction}
 
 
+@view_config(
+    route_name="transaction_edit",
+    renderer="heath:templates/transactions/edit.jinja2",
+)
 def edit(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
     session = request.dbsession
@@ -70,4 +74,5 @@ def edit(request: Request) -> Dict:
     if request.method == "POST":
         transaction.description = request.POST["description"]
         transaction.amount = float(request.POST["amount"])
+        return HTTPFound(location=request.route_url("transactions_list"))
     return {"transaction": transaction}
