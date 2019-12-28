@@ -100,14 +100,14 @@ class TestTransactionsListView(BaseTest):
 
 
 # Functional:
-# class FunctionaltTestTransactionsListView(FunctionalBaseTest):
-# TODO: Add test for transaction descriptions in list view.
-#       For some reason, the database does not initialize when an app
-#       object is created. This causes tests for views that rely on data from
-#       the database to fail with ""no such tables" error.
-#     def test_list_url(self):
-#         resp = self.testapp.get("/list")
-#         self.assertEqual(resp.status_code, 200)
+class FunctionalTestTransactionsListView(FunctionalBaseTest):
+    # TODO: Add test for transaction descriptions in list view.
+    #       For some reason, the database does not initialize when an app
+    #       object is created. This causes tests for views that rely on data from
+    #       the database to fail with ""no such tables" error.
+    def test_list_url(self):
+        resp = self.testapp.get("/list")
+        self.assertEqual(resp.status_code, 200)
 # TODO: Add test for link to detail pages
 # TODO: Add test for link to create transaction page
 

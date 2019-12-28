@@ -50,5 +50,9 @@ class FunctionalBaseTest(unittest.TestCase):
         from heath import main
         app = main({}, **settings)
 
+        from heath.models.meta import Base
+        Base.metadata.create_all(app.registry["engine"])
+        breakpoint()
+
         from webtest import TestApp
         self.testapp = TestApp(app)
