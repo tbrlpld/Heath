@@ -99,6 +99,22 @@ class TestTransactionsListView(BaseTest):
         )
 
 
+class TestTransactionsListViewNoTransactions(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.init_database()
+
+    def test_zero_budget(self):
+        """Return zero buget when no transactions exist."""
+        from heath.views.transactions import transactions_list
+        request = dummy_request(dbsession=self.session)
+        response = transactions_list(request)
+
+        self.assertEqual(response["budget"], 0)
+
+    # TODO: Add test for empty transactions list
+
+
 # Functional:
 class FunctionalTestTransactionsListView(FunctionalBaseTest):
     # TODO: Add test for transaction descriptions in list view.
