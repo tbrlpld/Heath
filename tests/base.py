@@ -28,6 +28,8 @@ class BaseTest(unittest.TestCase):
 
         self.session = get_tm_session(session_factory, transaction.manager)
 
+        self.init_database()
+
     def init_database(self):
         from heath.models.meta import Base
         Base.metadata.create_all(self.engine)

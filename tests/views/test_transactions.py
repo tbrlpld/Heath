@@ -4,7 +4,7 @@
 
 from heath.models.transaction import Transaction
 
-from ..base import BaseTest, dummy_request, FunctionalBaseTest
+from tests.base import BaseTest, FunctionalBaseTest, dummy_request
 
 
 class TestCreateTransactionViewFunction(BaseTest):
@@ -15,8 +15,6 @@ class TestCreateTransactionViewFunction(BaseTest):
         self.assertEqual(return_data, {})
 
     def test_post_to_create_view(self):
-        self.init_database()
-
         from heath.views.transactions import create
 
         request = dummy_request(
@@ -50,7 +48,7 @@ class FunctionalTestCreateTransactionView(FunctionalBaseTest):
 class TestTransactionsListView(BaseTest):
     def setUp(self):
         super().setUp()
-        self.init_database()
+
         session = self.session
         self.first_transaction = Transaction(
             description="First transaction",
@@ -102,7 +100,6 @@ class TestTransactionsListView(BaseTest):
 class TestTransactionsListViewNoTransactions(BaseTest):
     def setUp(self):
         super().setUp()
-        self.init_database()
 
     def test_zero_budget(self):
         """Return zero buget when no transactions exist."""
@@ -137,7 +134,6 @@ class FunctionalTestTransactionsListView(FunctionalBaseTest):
 class TestTransactionDetailView(BaseTest):
     def setUp(self):
         super().setUp()
-        self.init_database()
         session = self.session
         self.first_transaction = Transaction(
             description="First transaction",
@@ -172,7 +168,6 @@ class TestTransactionDetailView(BaseTest):
 class TestTransactionEditView(BaseTest):
     def setUp(self):
         super().setUp()
-        self.init_database()
         session = self.session
         self.first_transaction = Transaction(
             description="First transaction",
@@ -226,7 +221,6 @@ class TestTransactionEditView(BaseTest):
 class TestTransactionDeleteView(BaseTest):
     def setUp(self):
         super().setUp()
-        self.init_database()
         session = self.session
         self.first_transaction = Transaction(
             description="First transaction",
