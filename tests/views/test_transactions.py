@@ -95,7 +95,7 @@ class TestTransactionsListView(BaseTest):
 
         self.assertEqual(
             return_data["budget"],
-            60,
+            60.0,
         )
 
 
@@ -112,7 +112,13 @@ class TestTransactionsListViewNoTransactions(BaseTest):
 
         self.assertEqual(response["budget"], 0.0)
 
-    # TODO: Add test for empty transactions list
+    def test_empty_transactios_list(self):
+        """Return empty transactions list."""
+        from heath.views.transactions import transactions_list
+        request = dummy_request(dbsession=self.session)
+        response = transactions_list(request)
+
+        self.assertEqual(response["transactions"], [])
 
 
 # Functional:
