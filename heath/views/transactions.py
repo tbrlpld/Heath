@@ -74,7 +74,7 @@ def edit(request: Request) -> Dict:
     if request.method == "POST":
         transaction.description = request.POST["description"]
         transaction.amount = float(request.POST["amount"])
-        return HTTPFound(location="/list")
+        raise HTTPFound(location="/list")
     return {"transaction": transaction}
 
 
@@ -92,5 +92,5 @@ def delete(request: Request) -> Dict:
         raise HTTPNotFound()
     if request.method == "POST":
         session.delete(transaction)
-        return HTTPFound(location="/list")
+        raise HTTPFound(location="/list")
     return {"transaction": transaction}

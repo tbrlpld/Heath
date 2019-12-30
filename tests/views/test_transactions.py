@@ -230,7 +230,6 @@ class TestTransactionEditView(BaseTest):
         with self.assertRaises(HTTPNotFound):
             edit(request)
 
-
     def test_post_updates_information(self):
         request = dummy_request(
             dbsession=self.session,
@@ -242,8 +241,10 @@ class TestTransactionEditView(BaseTest):
         request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import edit
-        edit(request)
-
+        from pyramid.httpexceptions import HTTPFound
+        with self.assertRaises(HTTPFound):
+            edit(request)
+        # Check persistence in database
         first_transaction = self.session.query(Transaction).first()
         self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "The First Transaction")
@@ -294,7 +295,9 @@ class TestTransactionDeleteView(BaseTest):
         request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import delete
-        delete(request)
+        from pyramid.httpexceptions import HTTPFound
+        with self.assertRaises(HTTPFound):
+            delete(request)
 
         first_transaction = self.session.query(Transaction).first()
         self.assertEqual(first_transaction, None)
