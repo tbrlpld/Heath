@@ -32,6 +32,22 @@ class TestCreateTransactionViewFunction(BaseTest):
         self.assertEqual(first_transaction.amount, 100.00)
 
     # TODO: Add test for negative amount
+    def test_negative_amount(self):
+        from heath.views.transactions import create
+
+        request = dummy_request(
+            dbsession=self.session,
+            post={
+                "description": "New Transaction",
+                "amount": -100.00,
+            },
+        )
+        create(request)
+
+        first_transaction = self.session.query(Transaction).first()
+        self.assertEqual(first_transaction.id, 1)
+        self.assertEqual(first_transaction.description, "New Transaction")
+        self.assertEqual(first_transaction.amount, -100.00)
 
 
 class FunctionalTestCreateTransactionView(FunctionalBaseTest):
