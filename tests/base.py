@@ -55,5 +55,8 @@ class FunctionalBaseTest(unittest.TestCase):
         from heath.models.meta import Base
         Base.metadata.create_all(app.registry["engine"])
 
+        session_factory = app.registry["dbsession_factory"]
+        self.session = session_factory()
+
         from webtest import TestApp
         self.testapp = TestApp(app)

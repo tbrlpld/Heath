@@ -2,6 +2,8 @@
 
 """Tests for the transaction views."""
 
+import transaction
+
 from heath.models.transaction import Transaction
 
 from tests.base import BaseTest, FunctionalBaseTest, dummy_request
@@ -75,6 +77,8 @@ class FunctionalTestCreateTransactionView(FunctionalBaseTest):
         self.assertIn(b'name="description"', resp.body)
         self.assertIn(b'name="amount"', resp.body)
         self.assertIn(b'step="0.01"', resp.body)
+
+    # TODO: Add post to create
 
 
 class TestTransactionsListView(BaseTest):
@@ -150,17 +154,30 @@ class TestTransactionsListViewNoTransactions(BaseTest):
         self.assertEqual(response["transactions"], [])
 
 
-# Functional:
 class FunctionalTestTransactionsListView(FunctionalBaseTest):
-    # TODO: Add test for transaction descriptions in list view.
-    #       For some reason, the database does not initialize when an app
-    #       object is created. This causes tests for views that rely on data from
-    #       the database to fail with ""no such tables" error.
-    def test_list_url(self):
-        resp = self.testapp.get("/list")
-        self.assertEqual(resp.status_code, 200)
-# TODO: Add test for link to detail pages
-# TODO: Add test for link to create transaction page
+    def setUp(self):
+        super().setUp()
+
+        session = self.session
+        self.first_transaction = Transaction(
+            description="First transaction",
+            amount=100.00,
+        )
+        self.second_transaction = Transaction(
+            description="Second transaction",
+            amount=-40.00,
+        )
+        session.add(self.first_transaction)
+        session.add(self.second_transaction)
+        session.commit()
+
+    def test_list_get(self):
+        response = self.testapp.get("/list")
+        self.assertEqual(response.status_code, 200)
+        # Test for link to detail pages
+        self.assertIn(b'localhost/detail/1"', response.body)
+        self.assertIn(b'localhost/detail/2"', response.body)
+        # TODO: Add test for link to create transaction page
 
 
 class TestTransactionDetailView(BaseTest):
