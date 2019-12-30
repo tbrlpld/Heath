@@ -2,7 +2,7 @@
 
 {% block content %}
   <p>
-    Budget: {{ budget | round(2) }}
+    Budget: {{ "%.2f" | format(budget) }}
   </p>
   <table>
     <thead>
@@ -15,7 +15,7 @@
       {% for transaction in transactions %}
         <tr>
           <td><a href="{{ request.route_url('transaction_detail', transaction_id=transaction.id) }}">{{ transaction.description }}</a></td>
-          <td>{{ transaction.amount | round(2) }}</td>
+          <td>{{ "%.2f" | format(transaction.amount) }}</td>
         </tr>
       {% endfor %}
     </tbody>
