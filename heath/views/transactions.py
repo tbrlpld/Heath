@@ -25,7 +25,7 @@ def create(request: Request) -> Dict:
         )
         session = request.dbsession
         session.add(transaction)
-        return HTTPFound(location="/list")
+        raise HTTPFound(location="/list")
     return {}
 
 

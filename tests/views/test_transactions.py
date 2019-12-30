@@ -10,13 +10,10 @@ from tests.base import BaseTest, FunctionalBaseTest, dummy_request
 class TestCreateTransactionViewFunction(BaseTest):
     def test_create_view(self):
         from heath.views.transactions import create
-
         return_data = create(dummy_request(self.session))
         self.assertEqual(return_data, {})
 
-    def test_post_to_create_view(self):
-        from heath.views.transactions import create
-
+    def test_redirect_after_successful_creation(self):
         request = dummy_request(
             dbsession=self.session,
             post={
@@ -24,17 +21,33 @@ class TestCreateTransactionViewFunction(BaseTest):
                 "amount": 100.00,
             },
         )
-        create(request)
 
+        from heath.views.transactions import create
+        from pyramid.httpexceptions import HTTPFound
+        with self.assertRaises(HTTPFound):
+            create(request)
+
+    def test_post_to_create_view(self):
+        request = dummy_request(
+            dbsession=self.session,
+            post={
+                "description": "New Transaction",
+                "amount": 100.00,
+            },
+        )
+        from heath.views.transactions import create
+        from pyramid.httpexceptions import HTTPFound
+        with self.assertRaises(HTTPFound):
+            # Usually, a raised exception is treated as test failure.
+            # To prevent that, the exception needs to be expected.
+            create(request)
+        # Verify creation in database
         first_transaction = self.session.query(Transaction).first()
         self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "New Transaction")
         self.assertEqual(first_transaction.amount, 100.00)
 
-    # TODO: Add test for negative amount
     def test_negative_amount(self):
-        from heath.views.transactions import create
-
         request = dummy_request(
             dbsession=self.session,
             post={
@@ -42,8 +55,11 @@ class TestCreateTransactionViewFunction(BaseTest):
                 "amount": -100.00,
             },
         )
-        create(request)
-
+        from heath.views.transactions import create
+        from pyramid.httpexceptions import HTTPFound
+        with self.assertRaises(HTTPFound):
+            create(request)
+        # Verify creation in database
         first_transaction = self.session.query(Transaction).first()
         self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "New Transaction")
