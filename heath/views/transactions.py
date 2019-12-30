@@ -40,7 +40,7 @@ def transactions_list(request: Request) -> Dict:
     budget = session.query(func.sum(Transaction.amount)).scalar()
     return {
         "transactions": transactions,
-        "budget": budget,
+        "budget": budget or 0.0,
     }
 
 

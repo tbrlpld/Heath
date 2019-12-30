@@ -110,7 +110,7 @@ class TestTransactionsListViewNoTransactions(BaseTest):
         request = dummy_request(dbsession=self.session)
         response = transactions_list(request)
 
-        self.assertEqual(response["budget"], 0)
+        self.assertEqual(response["budget"], 0.0)
 
     # TODO: Add test for empty transactions list
 
