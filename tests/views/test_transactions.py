@@ -177,7 +177,8 @@ class FunctionalTestTransactionsListView(FunctionalBaseTest):
         # Test for link to detail pages
         self.assertIn(b'localhost/detail/1"', response.body)
         self.assertIn(b'localhost/detail/2"', response.body)
-        # TODO: Add test for link to create transaction page
+        # Test for link to create transaction page
+        self.assertIn(b'localhost/create"', response.body)
 
 
 class TestTransactionDetailView(BaseTest):
