@@ -161,7 +161,7 @@ class TestDetailView(object):
             detail(request)
 
 
-class TestTransactionEditView(object):
+class TestEditView(object):
     """Unit tests for the transaction edit view."""
 
     def test_show_only_one_transaction(
@@ -236,53 +236,81 @@ class TestTransactionEditView(object):
             edit(request)
 
 
-# class TestTransactionDeleteView(BaseTest):
-#     def setUp(self):
-#         super().setUp()
-#         session = self.session
-#         self.first_transaction = Transaction(
-#             description="First transaction",
-#             amount=100.00,
-#         )
-#         session.add(self.first_transaction)
+class TestDeleteView(object):
+    """Unit tests for the transaction delete view."""
 
-#     def test_show_only_one_transaction(self):
-#         request = dummy_request(self.session)
-#         request.matchdict["transaction_id"] = 1
+    def test_show_only_one_transaction(
+        self,
+        dbsession_for_unittest,
+        example_data_for_unittests,
+    ):
+        request = dummy_request(dbsession_for_unittest)
+        request.matchdict["transaction_id"] = 1
 
-#         from heath.views.transactions import delete
-#         return_data = delete(request)
+        from heath.views.transactions import delete
+        return_data = delete(request)
 
-#         self.assertIn("transaction", return_data)
-#         self.assertEqual(return_data["transaction"].id, 1)
-#         self.assertEqual(
-#             return_data["transaction"].description, "First transaction",
-#         )
-#         self.assertEqual(return_data["transaction"].amount, 100.00)
+        assert "transaction" in return_data
+        assert return_data["transaction"].id == 1
+        assert return_data["transaction"].description == "First transaction"
+        assert return_data["transaction"].amount == 100.00
 
-#     def test_404_when_not_existing(self):
-#         request = dummy_request(self.session)
-#         request.matchdict["transaction_id"] = 3
+    def test_404_when_not_existing(
+        self,
+        dbsession_for_unittest,
+    ):
+        request = dummy_request(dbsession_for_unittest)
+        request.matchdict["transaction_id"] = 3
 
-#         from pyramid.httpexceptions import HTTPNotFound
-#         from heath.views.transactions import delete
-#         with self.assertRaises(HTTPNotFound):
-#             delete(request)
+        from pyramid.httpexceptions import HTTPNotFound
+        from heath.views.transactions import delete
+        with pytest.raises(HTTPNotFound):
+            delete(request)
 
-#     def test_post_deletes_transaction(self):
-#         request = dummy_request(
-#             dbsession=self.session,
-#             post={
-#                 "description": "The First Transaction",
-#                 "amount": 123.00,
-#             },
-#         )
-#         request.matchdict["transaction_id"] = 1
+    # TODO: Require deletion confirmation to be set in post.
+    # This is just a little extra requirement to prevent posts to the delete
+    # endpoints resulting automatically in deletion of the objects
+    # Empty posts should not delete an object.
+    def test_empty_post_not_deleteting_transaction(
+        self,
+        dbsession_for_unittest,
+        example_data_for_unittests,
+    ):
+        session = dbsession_for_unittest
+        request = dummy_request(
+            dbsession=session,
+            post={},
+        )
+        request.matchdict["transaction_id"] = 1
 
-#         from heath.views.transactions import delete
-#         from pyramid.httpexceptions import HTTPFound
-#         with self.assertRaises(HTTPFound):
-#             delete(request)
+        from heath.views.transactions import delete
+        from pyramid.httpexceptions import HTTPBadRequest
+        with pytest.raises(HTTPBadRequest):
+            delete(request)
+        # Check that transaction still exists
+        from heath.models.transaction import Transaction
+        first_transaction = session.query(Transaction).filter_by(id=1).first()
+        assert first_transaction == example_data_for_unittests[0]
 
-#         first_transaction = self.session.query(Transaction).first()
-#         self.assertEqual(first_transaction, None)
+    def test_post_deletes_transaction(
+        self,
+        dbsession_for_unittest,
+        example_data_for_unittests,
+    ):
+        session = dbsession_for_unittest
+        request = dummy_request(
+            dbsession=session,
+            post={"delete.confirm": "delete.confirm"},
+        )
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import delete
+        from pyramid.httpexceptions import HTTPFound
+        with pytest.raises(HTTPFound):
+            delete(request)
+        # Check persistence in database
+        from heath.models.transaction import Transaction
+        first_transaction = session.query(Transaction).filter_by(id=1).first()
+        assert first_transaction == None
+
+
