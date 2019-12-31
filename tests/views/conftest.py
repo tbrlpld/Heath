@@ -41,6 +41,7 @@ def dbsession_for_unittest():
 @pytest.fixture
 def example_data_for_unittests(dbsession_for_unittest):
     session = dbsession_for_unittest
+    from heath.models.transaction import Transaction
     first_transaction = Transaction(
         description="First transaction",
         amount=100.00,
@@ -55,6 +56,7 @@ def example_data_for_unittests(dbsession_for_unittest):
         first_transaction,
         second_transaction,
     )
+
 
 def dummy_request(dbsession, **kwargs):
     return testing.DummyRequest(dbsession=dbsession, **kwargs)

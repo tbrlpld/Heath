@@ -73,47 +73,46 @@ class TestCreateView(object):
 
 
 class TestListView(object):
+    """Unit tests for transaction list view."""
 
-    # @pytest.fixture
+    @pytest.fixture
+    def dummy_request_with_dbsession(self, dbsession_for_unittest):
+        return dummy_request(dbsession=dbsession_for_unittest)
 
     def test_all_transactions_returned(
         self,
-        exmaple_data_for_unittests,
-        dbsession_for_unittest,
+        example_data_for_unittests,
+        dummy_request_with_dbsession,
     ):
         from heath.views.transactions import transactions_list
-        req = dummy_request(dbsession=dbsession_for_unittest)
-        return_data = transactions_list(req)
+        return_data = transactions_list(dummy_request_with_dbsession)
 
         assert "transactions" in return_data
-        assert exmaple_data_for_unittests[0] in return_data["transactions"]
-        assert exmaple_data_for_unittests[1] in return_data["transactions"]
+        assert example_data_for_unittests[0] in return_data["transactions"]
+        assert example_data_for_unittests[1] in return_data["transactions"]
 
-#     def test_transactions_in_reverse_order(self):
-#         # Test order of transactions (last transaction first in list)
-#         from heath.views.transactions import transactions_list
-#         req = dummy_request(dbsession=self.session)
-#         return_data = transactions_list(req)
+    def test_transactions_in_reverse_order(
+        self,
+        example_data_for_unittests,
+        dummy_request_with_dbsession,
+    ):
+        # Test order of transactions (last transaction first in list)
+        from heath.views.transactions import transactions_list
+        return_data = transactions_list(dummy_request_with_dbsession)
 
-#         self.assertEqual(
-#             self.second_transaction,
-#             return_data["transactions"][0],
-#         )
-#         self.assertEqual(
-#             self.first_transaction,
-#             return_data["transactions"][1],
-#         )
+        assert example_data_for_unittests[-1] == return_data["transactions"][0]
+        assert example_data_for_unittests[0] == return_data["transactions"][-1]
 
-#     def test_transaction_sum(self):
-#         # Add test for remaining budget returned
-#         from heath.views.transactions import transactions_list
-#         req = dummy_request(dbsession=self.session)
-#         return_data = transactions_list(req)
+    def test_transaction_sum(
+        self,
+        example_data_for_unittests,
+        dummy_request_with_dbsession,
+    ):
+        # Add test for remaining budget returned
+        from heath.views.transactions import transactions_list
+        return_data = transactions_list(dummy_request_with_dbsession)
 
-#         self.assertEqual(
-#             return_data["budget"],
-#             60.0,
-#         )
+        assert return_data["budget"] == 60.0
 
 
 # class TestTransactionsListViewNoTransactions(BaseTest):
