@@ -6,7 +6,7 @@ import transaction
 
 from heath.models.transaction import Transaction
 
-from tests.base import BaseTest, FunctionalBaseTest, dummy_request
+from tests.base import BaseTest, dummy_request
 
 
 class TestCreateTransactionViewFunction(BaseTest):
@@ -66,19 +66,6 @@ class TestCreateTransactionViewFunction(BaseTest):
         self.assertEqual(first_transaction.id, 1)
         self.assertEqual(first_transaction.description, "New Transaction")
         self.assertEqual(first_transaction.amount, -100.00)
-
-
-class FunctionalTestCreateTransactionView(FunctionalBaseTest):
-    def test_form_in_create_view(self):
-        resp = self.testapp.get("/create")
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"Create Transaction", resp.body)
-        self.assertIn(b"<form", resp.body)
-        self.assertIn(b'name="description"', resp.body)
-        self.assertIn(b'name="amount"', resp.body)
-        self.assertIn(b'step="0.01"', resp.body)
-
-    # TODO: Add post to create
 
 
 class TestTransactionsListView(BaseTest):
@@ -152,33 +139,6 @@ class TestTransactionsListViewNoTransactions(BaseTest):
         response = transactions_list(request)
 
         self.assertEqual(response["transactions"], [])
-
-
-class FunctionalTestTransactionsListView(FunctionalBaseTest):
-    def setUp(self):
-        super().setUp()
-
-        session = self.session
-        self.first_transaction = Transaction(
-            description="First transaction",
-            amount=100.00,
-        )
-        self.second_transaction = Transaction(
-            description="Second transaction",
-            amount=-40.00,
-        )
-        session.add(self.first_transaction)
-        session.add(self.second_transaction)
-        session.commit()
-
-    def test_list_get(self):
-        response = self.testapp.get("/list")
-        self.assertEqual(response.status_code, 200)
-        # Test for link to detail pages
-        self.assertIn(b'localhost/detail/1"', response.body)
-        self.assertIn(b'localhost/detail/2"', response.body)
-        # Test for link to create transaction page
-        self.assertIn(b'localhost/create"', response.body)
 
 
 class TestTransactionDetailView(BaseTest):

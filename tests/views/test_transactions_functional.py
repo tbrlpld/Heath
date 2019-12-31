@@ -3,34 +3,6 @@
 """Create tests in the pytest style."""
 
 import pytest
-from pyramid import testing
-
-
-@pytest.fixture
-def app():
-    config = testing.setUp(settings={
-        'sqlalchemy.url': 'sqlite:///:memory:',
-    })
-    settings = config.get_settings()
-
-    from heath import main
-    app = main({}, **settings)
-
-    return app
-
-
-@pytest.fixture
-def initialized_database(app):
-    from heath.models.meta import Base
-    Base.metadata.create_all(app.registry["engine"])
-
-
-@pytest.fixture
-def testapp(app, initialized_database):
-    from webtest import TestApp
-    testapp_instance = TestApp(app)
-
-    return testapp_instance
 
 
 @pytest.fixture
@@ -57,7 +29,7 @@ def test_get_home(testapp):
     assert response.status_code == 200
 
 
-def test_get_list(testapp, example_data):
+def test_get_list(testapp):
     response = testapp.get("/list")
     assert response.status_code == 200
 
@@ -66,3 +38,16 @@ def test_for_links_in_list(testapp, example_data):
     response = testapp.get("/list")
     assert b'localhost/detail/1"' in response.body
     assert b'localhost/detail/2"' in response.body
+    assert b'localhost/create"' in response.body
+
+
+def test_get_create(testapp):
+    resp = testapp.get("/create")
+    assert resp.status_code == 200
+    assert b"Create Transaction" in resp.body
+    assert b"<form" in resp.body
+    assert b'name="description"' in resp.body
+    assert b'name="amount"' in resp.body
+    assert b'step="0.01"' in resp.body
+
+# TODO: Add test post to create
