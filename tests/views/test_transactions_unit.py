@@ -79,6 +79,20 @@ class TestListView(object):
     def dummy_request_with_dbsession(self, dbsession_for_unittest):
         return dummy_request(dbsession=dbsession_for_unittest)
 
+    def test_zero_budget(self, dummy_request_with_dbsession):
+        """Return zero buget when no transactions exist."""
+        from heath.views.transactions import transactions_list
+        response = transactions_list(dummy_request_with_dbsession)
+
+        assert response["budget"] == 0.0
+
+    def test_empty_transactios_list(self, dummy_request_with_dbsession):
+        """Return empty transactions list."""
+        from heath.views.transactions import transactions_list
+        response = transactions_list(dummy_request_with_dbsession)
+
+        assert response["transactions"] == []
+
     def test_all_transactions_returned(
         self,
         example_data_for_unittests,
@@ -113,27 +127,6 @@ class TestListView(object):
         return_data = transactions_list(dummy_request_with_dbsession)
 
         assert return_data["budget"] == 60.0
-
-
-# class TestTransactionsListViewNoTransactions(BaseTest):
-#     def setUp(self):
-#         super().setUp()
-
-#     def test_zero_budget(self):
-#         """Return zero buget when no transactions exist."""
-#         from heath.views.transactions import transactions_list
-#         request = dummy_request(dbsession=self.session)
-#         response = transactions_list(request)
-
-#         self.assertEqual(response["budget"], 0.0)
-
-#     def test_empty_transactios_list(self):
-#         """Return empty transactions list."""
-#         from heath.views.transactions import transactions_list
-#         request = dummy_request(dbsession=self.session)
-#         response = transactions_list(request)
-
-#         self.assertEqual(response["transactions"], [])
 
 
 # class TestTransactionDetailView(BaseTest):
