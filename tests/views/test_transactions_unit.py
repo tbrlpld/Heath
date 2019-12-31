@@ -161,58 +161,79 @@ class TestDetailView(object):
             detail(request)
 
 
-# class TestTransactionEditView(BaseTest):
-#     def setUp(self):
-#         super().setUp()
-#         session = self.session
-#         self.first_transaction = Transaction(
-#             description="First transaction",
-#             amount=100.00,
-#         )
-#         session.add(self.first_transaction)
+class TestTransactionEditView(object):
+    """Unit tests for the transaction edit view."""
 
-#     def test_show_only_one_transaction(self):
-#         request = dummy_request(self.session)
-#         request.matchdict["transaction_id"] = 1
+    def test_show_only_one_transaction(
+        self,
+        dbsession_for_unittest,
+        example_data_for_unittests,
+    ):
+        request = dummy_request(dbsession_for_unittest)
+        request.matchdict["transaction_id"] = 1
 
-#         from heath.views.transactions import edit
-#         return_data = edit(request)
+        from heath.views.transactions import edit
+        return_data = edit(request)
 
-#         self.assertIn("transaction", return_data)
-#         self.assertEqual(return_data["transaction"].id, 1)
-#         self.assertEqual(
-#             return_data["transaction"].description, "First transaction",
-#         )
-#         self.assertEqual(return_data["transaction"].amount, 100.00)
+        assert "transaction" in return_data
+        assert return_data["transaction"].id == 1
+        assert return_data["transaction"].description == "First transaction"
+        assert return_data["transaction"].amount == 100.00
 
-#     def test_404_when_not_existing(self):
-#         request = dummy_request(self.session)
-#         request.matchdict["transaction_id"] = 3
+    def test_404_when_not_existing(self, dbsession_for_unittest):
+        request = dummy_request(dbsession_for_unittest)
+        request.matchdict["transaction_id"] = 1
 
-#         from pyramid.httpexceptions import HTTPNotFound
-#         from heath.views.transactions import edit
-#         with self.assertRaises(HTTPNotFound):
-#             edit(request)
+        from pyramid.httpexceptions import HTTPNotFound
+        from heath.views.transactions import edit
+        with pytest.raises(HTTPNotFound):
+            edit(request)
 
-#     def test_post_updates_information(self):
-#         request = dummy_request(
-#             dbsession=self.session,
-#             post={
-#                 "description": "The First Transaction",
-#                 "amount": 123.00,
-#             },
-#         )
-#         request.matchdict["transaction_id"] = 1
+    def test_post_updates_information(
+        self,
+        dbsession_for_unittest,
+        example_data_for_unittests,
+    ):
+        session = dbsession_for_unittest
+        request = dummy_request(
+            dbsession=session,
+            post={
+                "description": "The First Transaction",
+                "amount": 123.00,
+            },
+        )
+        request.matchdict["transaction_id"] = 1
 
-#         from heath.views.transactions import edit
-#         from pyramid.httpexceptions import HTTPFound
-#         with self.assertRaises(HTTPFound):
-#             edit(request)
-#         # Check persistence in database
-#         first_transaction = self.session.query(Transaction).first()
-#         self.assertEqual(first_transaction.id, 1)
-#         self.assertEqual(first_transaction.description, "The First Transaction")
-#         self.assertEqual(first_transaction.amount, 123.00)
+        from heath.views.transactions import edit
+        from pyramid.httpexceptions import HTTPFound
+        with pytest.raises(HTTPFound):
+            edit(request)
+        # Check persistence in database
+        from heath.models.transaction import Transaction
+        first_transaction = session.query(Transaction).first()
+        assert first_transaction.id == 1
+        assert first_transaction.description == "The First Transaction"
+        assert first_transaction.amount == 123.00
+
+    def test_post_update_non_existing_id(
+        self,
+        dbsession_for_unittest,
+    ):
+        """Test for post to not existing id."""
+        session = dbsession_for_unittest
+        request = dummy_request(
+            dbsession=session,
+            post={
+                "description": "The First Transaction",
+                "amount": 123.00,
+            },
+        )
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import edit
+        from pyramid.httpexceptions import HTTPNotFound
+        with pytest.raises(HTTPNotFound):
+            edit(request)
 
 
 # class TestTransactionDeleteView(BaseTest):
