@@ -7,6 +7,26 @@ import pytest
 from tests.views.conftest import dummy_request
 
 
+@pytest.fixture
+def example_data_for_unittests(dbsession_for_unittest):
+    session = dbsession_for_unittest
+    from heath.models.transaction import Transaction
+    first_transaction = Transaction(
+        description="First transaction",
+        amount=100.00,
+    )
+    second_transaction = Transaction(
+        description="Second transaction",
+        amount=-40.00,
+    )
+    session.add(first_transaction)
+    session.add(second_transaction)
+    return (
+        first_transaction,
+        second_transaction,
+    )
+
+
 class TestCreateView(object):
     """Test for the create view."""
 

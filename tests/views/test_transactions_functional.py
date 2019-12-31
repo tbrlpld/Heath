@@ -51,3 +51,21 @@ def test_get_create(testapp):
     assert b'step="0.01"' in resp.body
 
 # TODO: Add test post to create
+
+def test_get_delete(testapp, example_data):
+    response = testapp.get("/delete/1")
+    assert response.status_code == 200
+    assert b"<form" in response.body
+    assert b"delete.confirm" in response.body
+
+def test_empty_post_delete_fail(testapp, example_data):
+    testapp.post("/delete/1", status=400)
+
+def test_empty_post_delete_success(testapp, example_data):
+    testapp.post(
+        "/delete/1",
+        {"delete.confirm": "delete.confirm"},
+        status=302,
+    )
+    # Check that detail is not available anymore
+    testapp.get("/detail/1", status=404)
