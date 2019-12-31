@@ -6,7 +6,9 @@ import pytest
 from pyramid import testing
 import transaction  # this is not my module, but a package for transaction management
 
+
 # Unit
+
 @pytest.fixture
 def dbsession_for_unittest():
     config = testing.setUp(settings={
@@ -36,11 +38,30 @@ def dbsession_for_unittest():
     Base.metadata.drop_all(engine)
 
 
+@pytest.fixture
+def example_data_for_unittests(dbsession_for_unittest):
+    session = dbsession_for_unittest
+    first_transaction = Transaction(
+        description="First transaction",
+        amount=100.00,
+    )
+    second_transaction = Transaction(
+        description="Second transaction",
+        amount=-40.00,
+    )
+    session.add(first_transaction)
+    session.add(second_transaction)
+    return (
+        first_transaction,
+        second_transaction,
+    )
+
 def dummy_request(dbsession, **kwargs):
     return testing.DummyRequest(dbsession=dbsession, **kwargs)
 
 
 # Functional
+
 @pytest.fixture
 def app():
     config = testing.setUp(settings={

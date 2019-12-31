@@ -72,30 +72,22 @@ class TestCreateView(object):
         assert first_transaction.amount == -100.00
 
 
-# class TestTransactionsListView(BaseTest):
-#     def setUp(self):
-#         super().setUp()
+class TestListView(object):
 
-#         session = self.session
-#         self.first_transaction = Transaction(
-#             description="First transaction",
-#             amount=100.00,
-#         )
-#         self.second_transaction = Transaction(
-#             description="Second transaction",
-#             amount=-40.00,
-#         )
-#         session.add(self.first_transaction)
-#         session.add(self.second_transaction)
+    # @pytest.fixture
 
-#     def test_all_transactions_returned(self):
-#         from heath.views.transactions import transactions_list
-#         req = dummy_request(dbsession=self.session)
-#         return_data = transactions_list(req)
+    def test_all_transactions_returned(
+        self,
+        exmaple_data_for_unittests,
+        dbsession_for_unittest,
+    ):
+        from heath.views.transactions import transactions_list
+        req = dummy_request(dbsession=dbsession_for_unittest)
+        return_data = transactions_list(req)
 
-#         self.assertIn("transactions", return_data)
-#         self.assertIn(self.first_transaction, return_data["transactions"])
-#         self.assertIn(self.second_transaction, return_data["transactions"])
+        assert "transactions" in return_data
+        assert exmaple_data_for_unittests[0] in return_data["transactions"]
+        assert exmaple_data_for_unittests[1] in return_data["transactions"]
 
 #     def test_transactions_in_reverse_order(self):
 #         # Test order of transactions (last transaction first in list)
