@@ -129,38 +129,36 @@ class TestListView(object):
         assert return_data["budget"] == 60.0
 
 
-# class TestTransactionDetailView(BaseTest):
-#     def setUp(self):
-#         super().setUp()
-#         session = self.session
-#         self.first_transaction = Transaction(
-#             description="First transaction",
-#             amount=100.00,
-#         )
-#         session.add(self.first_transaction)
+class TestDetailView(object):
+    """Tests for the transaction detail view."""
 
-#     def test_show_only_one_transaction(self):
-#         request = dummy_request(self.session)
-#         request.matchdict["transaction_id"] = 1
+    def test_show_only_one_transaction(
+        self,
+        dbsession_for_unittest,
+        example_data_for_unittests,
+    ):
+        request = dummy_request(dbsession_for_unittest)
+        request.matchdict["transaction_id"] = 1
 
-#         from heath.views.transactions import detail
-#         return_data = detail(request)
+        from heath.views.transactions import detail
+        return_data = detail(request)
 
-#         self.assertIn("transaction", return_data)
-#         self.assertEqual(return_data["transaction"].id, 1)
-#         self.assertEqual(
-#             return_data["transaction"].description, "First transaction",
-#         )
-#         self.assertEqual(return_data["transaction"].amount, 100.00)
+        assert "transaction" in return_data
+        assert return_data["transaction"].id == 1
+        assert return_data["transaction"].description == "First transaction"
+        assert return_data["transaction"].amount == 100.00
 
-#     def test_404_when_not_existing(self):
-#         request = dummy_request(self.session)
-#         request.matchdict["transaction_id"] = 3
+    def test_404_when_not_existing(
+        self,
+        dbsession_for_unittest,
+    ):
+        request = dummy_request(dbsession_for_unittest)
+        request.matchdict["transaction_id"] = 1
 
-#         from pyramid.httpexceptions import HTTPNotFound
-#         from heath.views.transactions import detail
-#         with self.assertRaises(HTTPNotFound):
-#             detail(request)
+        from pyramid.httpexceptions import HTTPNotFound
+        from heath.views.transactions import detail
+        with pytest.raises(HTTPNotFound):
+            detail(request)
 
 
 # class TestTransactionEditView(BaseTest):
