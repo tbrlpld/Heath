@@ -4,7 +4,7 @@
 
 from typing import Dict, Union
 
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -91,6 +91,9 @@ def delete(request: Request) -> Dict:
     if not transaction:
         raise HTTPNotFound()
     if request.method == "POST":
-        session.delete(transaction)
-        raise HTTPFound(location="/list")
+        if "delete.confirm" in request.POST:
+            session.delete(transaction)
+            raise HTTPFound(location="/list")
+        else:
+            raise HTTPBadRequest()
     return {"transaction": transaction}
