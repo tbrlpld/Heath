@@ -52,16 +52,21 @@ def test_get_create(testapp):
 
 # TODO: Add test post to create
 
+
 def test_get_delete(testapp, example_data):
     response = testapp.get("/delete/1")
     assert response.status_code == 200
     assert b"<form" in response.body
     assert b"delete.confirm" in response.body
 
-def test_empty_post_delete_fail(testapp, example_data):
+
+def test_post_delete_fail(testapp, example_data):
+    """Posting no data to the view should fail."""
     testapp.post("/delete/1", status=400)
 
-def test_empty_post_delete_success(testapp, example_data):
+
+def test_post_delete_success(testapp, example_data):
+    """Posting `delete.confirm` to the endpoint should succeed."""
     testapp.post(
         "/delete/1",
         {"delete.confirm": "delete.confirm"},
@@ -69,3 +74,5 @@ def test_empty_post_delete_success(testapp, example_data):
     )
     # Check that detail is not available anymore
     testapp.get("/detail/1", status=404)
+
+# TODO: Test form availability and functionality

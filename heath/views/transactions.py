@@ -9,7 +9,7 @@ from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy.sql import func
-from transaction import manager as tm
+
 
 from heath.models.transaction import Transaction
 
@@ -94,8 +94,7 @@ def delete(request: Request) -> Dict:
     if request.method == "POST":
         if "delete.confirm" in request.POST:
             session.delete(transaction)
-            tm.commit()
-            raise HTTPFound(location="/list")
+            return HTTPFound(location="/list")
         else:
             raise HTTPBadRequest()
     return {"transaction": transaction}
