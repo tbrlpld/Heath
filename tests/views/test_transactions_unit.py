@@ -48,8 +48,9 @@ class TestCreateView(object):
     def test_redirect_after_successful_creation(self, dummy_post_request):
         from heath.views.transactions import create
         from pyramid.httpexceptions import HTTPFound
-        with pytest.raises(HTTPFound):
-            create(dummy_post_request)
+
+        response = create(dummy_post_request)
+        assert isinstance(response, HTTPFound)
 
     def test_post_to_create_view(
         self,
@@ -58,10 +59,9 @@ class TestCreateView(object):
     ):
         from heath.views.transactions import create
         from pyramid.httpexceptions import HTTPFound
-        with pytest.raises(HTTPFound):
-            # Usually, a raised exception is treated as test failure.
-            # To prevent that, the exception needs to be expected.
-            create(dummy_post_request)
+
+        response = create(dummy_post_request)
+        assert isinstance(response, HTTPFound)
 
         # Verify creation in database
         session = dbsession_for_unittest
@@ -82,8 +82,10 @@ class TestCreateView(object):
         )
         from heath.views.transactions import create
         from pyramid.httpexceptions import HTTPFound
-        with pytest.raises(HTTPFound):
-            create(request)
+
+        response = create(request)
+        assert isinstance(response, HTTPFound)
+
         # Verify creation in database
         from heath.models.transaction import Transaction
         first_transaction = session.query(Transaction).first()
@@ -226,8 +228,10 @@ class TestEditView(object):
 
         from heath.views.transactions import edit
         from pyramid.httpexceptions import HTTPFound
-        with pytest.raises(HTTPFound):
-            edit(request)
+
+        response = edit(request)
+        assert isinstance(response, HTTPFound)
+
         # Check persistence in database
         from heath.models.transaction import Transaction
         first_transaction = session.query(Transaction).first()
