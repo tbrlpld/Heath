@@ -24,9 +24,8 @@ def create(request: Request) -> Dict:
             description=request.POST["description"],
             amount=float(request.POST["amount"]),
         )
-        session = request.dbsession
-        session.add(transaction)
-        raise HTTPFound(location="/list")
+        request.dbsession.add(transaction)
+        return HTTPFound(location="/list")
     return {}
 
 
@@ -53,7 +52,9 @@ def detail(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
 
     session = request.dbsession
-    transaction = session.query(Transaction).filter_by(id=transaction_id).first()
+    transaction = session.query(Transaction).filter_by(
+        id=transaction_id,
+    ).first()
 
     if not transaction:
         raise HTTPNotFound()
@@ -75,7 +76,7 @@ def edit(request: Request) -> Dict:
     if request.method == "POST":
         transaction.description = request.POST["description"]
         transaction.amount = float(request.POST["amount"])
-        raise HTTPFound(location="/list")
+        return HTTPFound(location="/list")
     return {"transaction": transaction}
 
 
