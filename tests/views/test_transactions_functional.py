@@ -51,6 +51,15 @@ def test_get_create(testapp):
     assert b'step="0.01"' in resp.body
 
 # TODO: Add test post to create
+def test_post_create(testapp):
+    testapp.post(
+        "/create",
+        {
+            "description": "A new transaction",
+            "amount": "-99.99",
+        },
+        status=302,
+    )
 
 
 def test_get_delete(testapp, example_data):

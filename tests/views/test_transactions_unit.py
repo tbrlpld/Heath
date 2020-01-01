@@ -287,7 +287,7 @@ class TestDeleteView(object):
         with pytest.raises(HTTPNotFound):
             delete(request)
 
-    # TODO: Require deletion confirmation to be set in post.
+    # Require deletion confirmation to be set in post.
     # This is just a little extra requirement to prevent posts to the delete
     # endpoints resulting automatically in deletion of the objects
     # Empty posts should not delete an object.
@@ -326,8 +326,10 @@ class TestDeleteView(object):
 
         from heath.views.transactions import delete
         from pyramid.httpexceptions import HTTPFound
-        with pytest.raises(HTTPFound):
-            delete(request)
+
+        response = delete(request)
+        assert isinstance(response, HTTPFound)
+
         # Check persistence in database
         from heath.models.transaction import Transaction
         first_transaction = session.query(Transaction).filter_by(id=1).first()
