@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Create tests in the pytest style."""
+"""Create tests in the pytest style. """
 
 import pytest
 
@@ -24,64 +24,70 @@ def example_data(app, initialized_database):
     session.commit()
 
 
-def test_get_home(testapp):
-    response = testapp.get("/")
-    assert response.status_code == 200
+class TestHome(object):
+    def test_get_home(self, testapp):
+        response = testapp.get("/")
+        assert response.status_code == 200
 
 
-def test_get_list(testapp):
-    response = testapp.get("/list")
-    assert response.status_code == 200
+class TestListView(object):
+    def test_get_list(self, testapp):
+        response = testapp.get("/list")
+        assert response.status_code == 200
+
+    def test_for_links_in_list(self, testapp, example_data):
+        response = testapp.get("/list")
+        assert b'localhost/detail/1"' in response.body
+        assert b'localhost/detail/2"' in response.body
+        assert b'localhost/create"' in response.body
 
 
-def test_for_links_in_list(testapp, example_data):
-    response = testapp.get("/list")
-    assert b'localhost/detail/1"' in response.body
-    assert b'localhost/detail/2"' in response.body
-    assert b'localhost/create"' in response.body
+class TestCreateView(object):
+    def test_get_create(self, testapp):
+        resp = testapp.get("/create")
+        assert resp.status_code == 200
+        assert b"Create Transaction" in resp.body
+        assert b"<form" in resp.body
+        assert b'name="description"' in resp.body
+        assert b'name="amount"' in resp.body
+        assert b'step="0.01"' in resp.body
+
+    def test_post_create(self, testapp):
+        testapp.post(
+            "/create",
+            {
+                "description": "A new transaction",
+                "amount": "-99.99",
+            },
+            status=302,
+        )
+
+        # Check availability
+        response = testapp.get("/detail/1")
+        assert response.status_code == 200
+        assert "A new transaction" in response.text
+        assert "-99.99" in response.text
 
 
-def test_get_create(testapp):
-    resp = testapp.get("/create")
-    assert resp.status_code == 200
-    assert b"Create Transaction" in resp.body
-    assert b"<form" in resp.body
-    assert b'name="description"' in resp.body
-    assert b'name="amount"' in resp.body
-    assert b'step="0.01"' in resp.body
+class TestDeleteView(object):
+    def test_get_delete(self, testapp, example_data):
+        response = testapp.get("/delete/1")
+        assert response.status_code == 200
+        assert b"<form" in response.body
+        assert b"delete.confirm" in response.body
 
-# TODO: Add test post to create
-def test_post_create(testapp):
-    testapp.post(
-        "/create",
-        {
-            "description": "A new transaction",
-            "amount": "-99.99",
-        },
-        status=302,
-    )
+    def test_post_delete_fail(self, testapp, example_data):
+        """Posting no data to the view should fail."""
+        testapp.post("/delete/1", status=400)
 
+    def test_post_delete_success(self, testapp, example_data):
+        """Posting `delete.confirm` to the endpoint should succeed."""
+        testapp.post(
+            "/delete/1",
+            {"delete.confirm": "delete.confirm"},
+            status=302,
+        )
+        # Check that detail is not available anymore
+        testapp.get("/detail/1", status=404)
 
-def test_get_delete(testapp, example_data):
-    response = testapp.get("/delete/1")
-    assert response.status_code == 200
-    assert b"<form" in response.body
-    assert b"delete.confirm" in response.body
-
-
-def test_post_delete_fail(testapp, example_data):
-    """Posting no data to the view should fail."""
-    testapp.post("/delete/1", status=400)
-
-
-def test_post_delete_success(testapp, example_data):
-    """Posting `delete.confirm` to the endpoint should succeed."""
-    testapp.post(
-        "/delete/1",
-        {"delete.confirm": "delete.confirm"},
-        status=302,
-    )
-    # Check that detail is not available anymore
-    testapp.get("/detail/1", status=404)
-
-# TODO: Test form availability and functionality
+    # TODO: Test form availability and functionality
