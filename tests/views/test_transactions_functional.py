@@ -2,6 +2,7 @@
 
 """Create tests in the pytest style. """
 
+import bs4
 import pytest
 
 
@@ -73,8 +74,16 @@ class TestDeleteView(object):
     def test_get_delete(self, testapp, example_data):
         response = testapp.get("/delete/1")
         assert response.status_code == 200
-        assert b"<form" in response.body
-        assert b"delete.confirm" in response.body
+
+        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        forms = soup.select("form")
+        assert len(forms) == 1
+
+        form = forms[0]
+        assert form["method"] == "post"
+        assert form["action"] == ""
+        assert form.input["name"] == "delete.confirm"
+        assert form.input["type"] == "submit"
 
     def test_post_delete_fail(self, testapp, example_data):
         """Posting no data to the view should fail."""
