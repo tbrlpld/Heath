@@ -99,4 +99,19 @@ class TestDeleteView(object):
         # Check that detail is not available anymore
         testapp.get("/detail/1", status=404)
 
-    # TODO: Test form availability and functionality
+    def test_form_functionality(self, testapp, example_data):
+        """
+        Test form functionality via WebTest.
+
+        See also:
+        https://docs.pylonsproject.org/projects/webtest/en/latest/forms.html#submit-a-form
+        """
+
+        # Get form
+        response = testapp.get("/delete/1", status=200)
+        form = response.form
+        # Submitting the form
+        response = form.submit("delete.confirm")
+        assert response.status_code == 302
+        # Check that detail is not available anymore
+        testapp.get("/detail/1", status=404)
