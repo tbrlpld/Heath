@@ -62,6 +62,30 @@ class TestCreateView(object):
         assert "A new transaction" in response.text
         assert "-99.99" in response.text
 
+    def test_create_form(self, testapp):
+        # Retrieve the form
+        response = testapp.get("/create", status=200)
+        form = response.form
+        # Fill the form
+        form["description"] = "New Transaction"
+        form["amount"] = "100"
+        # Submit the form
+        submit_response = form.submit("create")
+        assert submit_response.status_code == 302
+        # Redirect should be to list view and contain the new transaction in
+        # a table.
+        response = submit_response.follow()
+        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        table = soup.select("table#transactions")[0]
+        transaction_cells = table.tbody.tr.find_all("td")
+        assert "New Transaction" in transaction_cells[0].text
+        assert "100" in transaction_cells[1].text
+
+
+    # TODO: test invalid form data
+
+
+
 
 class TestListView(object):
     def test_get_list(self, testapp):
