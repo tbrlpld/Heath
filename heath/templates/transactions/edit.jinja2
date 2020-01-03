@@ -4,10 +4,10 @@
   <h1>Edit Transaction</h1>
   <form action="" method="post">
     <label for="description">Description</label>
-    <input type="text" name="description" id="description" value="{{ transaction.description }}" required>
+    <input id="amount" type="text" name="description" id="description" value="{{ transaction.description }}" required>
     <br>
     <label for="amount">Amount</label>
-    <input type="number" name="amount" id="amount" step="0.01" value="{{ '%.2f' | format(transaction.amount) }}" required>
+    <input id="amount" type="number" name="amount" id="amount" step="0.01" value="{{ '%.2f' | format(transaction.amount) }}" required>
     <br>
     <input type="submit" name="submit" value="Update">
   </form>

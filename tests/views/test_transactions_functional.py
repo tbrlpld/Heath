@@ -31,27 +31,20 @@ class TestHome(object):
         assert response.status_code == 200
 
 
-class TestListView(object):
-    def test_get_list(self, testapp):
-        response = testapp.get("/list")
-        assert response.status_code == 200
-
-    def test_for_links_in_list(self, testapp, example_data):
-        response = testapp.get("/list")
-        assert b'localhost/detail/1"' in response.body
-        assert b'localhost/detail/2"' in response.body
-        assert b'localhost/create"' in response.body
-
-
 class TestCreateView(object):
     def test_get_create(self, testapp):
-        resp = testapp.get("/create")
-        assert resp.status_code == 200
-        assert b"Create Transaction" in resp.body
-        assert b"<form" in resp.body
-        assert b'name="description"' in resp.body
-        assert b'name="amount"' in resp.body
-        assert b'step="0.01"' in resp.body
+        response = testapp.get("/create")
+        assert response.status_code == 200
+
+        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        assert soup.h1.text == "Create Transaction"
+        forms = soup.select("form")
+        assert len(forms) == 1
+        description_input = soup.form.select("input#description")[0]
+        assert description_input["name"] == "description"
+        amount_input = soup.form.select("input#amount")[0]
+        assert amount_input["name"] == "amount"
+        assert amount_input["step"] == "0.01"
 
     def test_post_create(self, testapp):
         testapp.post(
@@ -69,6 +62,24 @@ class TestCreateView(object):
         assert "A new transaction" in response.text
         assert "-99.99" in response.text
 
+
+class TestListView(object):
+    def test_get_list(self, testapp):
+        response = testapp.get("/list")
+        assert response.status_code == 200
+
+    def test_for_links_in_list(self, testapp, example_data):
+        response = testapp.get("/list")
+        assert b'localhost/detail/1"' in response.body
+        assert b'localhost/detail/2"' in response.body
+        assert b'localhost/create"' in response.body
+
+
+# TODO: Add tests for the detail view
+
+
+
+# Add functional tests to the edit view.
 
 class TestDeleteView(object):
     def test_get_delete(self, testapp, example_data):
