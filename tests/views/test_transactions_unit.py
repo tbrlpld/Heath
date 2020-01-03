@@ -93,6 +93,8 @@ class TestCreateView(object):
         assert first_transaction.description == "New Transaction"
         assert first_transaction.amount == -100.00
 
+    # TODO: Add test for invalid data
+
 
 class TestListView(object):
     """Unit tests for transaction list view."""

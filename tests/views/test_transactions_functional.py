@@ -82,11 +82,6 @@ class TestCreateView(object):
         assert "100" in transaction_cells[1].text
 
 
-    # TODO: test invalid form data
-
-
-
-
 class TestListView(object):
     def test_get_list(self, testapp):
         response = testapp.get("/list")
@@ -94,9 +89,13 @@ class TestListView(object):
 
     def test_for_links_in_list(self, testapp, example_data):
         response = testapp.get("/list")
-        assert b'localhost/detail/1"' in response.body
-        assert b'localhost/detail/2"' in response.body
-        assert b'localhost/create"' in response.body
+        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        link_tags = soup.select("a")
+        all_link_urls = [a["href"] for a in link_tags]
+        all_link_url_string = " ".join(all_link_urls)
+        assert "/detail/1" in all_link_url_string
+        assert "/detail/2" in all_link_url_string
+        assert "/create" in all_link_url_string
 
 
 # TODO: Add tests for the detail view
