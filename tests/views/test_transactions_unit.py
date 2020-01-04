@@ -93,7 +93,27 @@ class TestCreateView(object):
         assert first_transaction.description == "New Transaction"
         assert first_transaction.amount == -100.00
 
-    # TODO: Add test for invalid data
+    def test_invalid_amount(self, dbsession_for_unittest):
+        """Test handling when amount is not a number."""
+        session = dbsession_for_unittest
+        request = dummy_request(
+            dbsession=session,
+            post={
+                "description": "New Transaction",
+                "amount": "Not a number",
+            },
+        )
+
+        from heath.views.transactions import create
+        response = create(request)
+        assert response["errors"][0] == "Amount has to be a number."
+        assert response["description"] == "New Transaction"
+        assert response["amount"] == "Not a number"
+
+        # Verify no creation in database
+        from heath.models.transaction import Transaction
+        first_transaction = session.query(Transaction).first()
+        assert first_transaction is None
 
 
 class TestListView(object):

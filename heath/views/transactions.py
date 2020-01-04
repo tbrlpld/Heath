@@ -19,14 +19,22 @@ from heath.models.transaction import Transaction
     renderer="heath:templates/transactions/create.jinja2",
 )
 def create(request: Request) -> Dict:
+    return_data: Dict = {}
     if request.method == "POST":
+        try:
+            amount = float(request.POST["amount"])
+        except ValueError:
+            return_data["errors"] = ["Amount has to be a number."]
+            return_data["description"] = request.POST["description"]
+            return_data["amount"] = request.POST["amount"]
+            return return_data
         transaction = Transaction(
             description=request.POST["description"],
-            amount=float(request.POST["amount"]),
+            amount=amount,
         )
         request.dbsession.add(transaction)
         return HTTPFound(location="/list")
-    return {}
+    return return_data
 
 
 @view_config(

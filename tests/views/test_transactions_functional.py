@@ -62,6 +62,23 @@ class TestCreateView(object):
         assert "A new transaction" in response.text
         assert "-99.99" in response.text
 
+    def test_post_invalid_amount(self, testapp):
+        """Test posting invalid amount shows error message."""
+        response = testapp.post(
+            "/create",
+            {
+                "description": "A new transaction",
+                "amount": "Not a number",
+            },
+            status=200,
+        )
+
+        soup = bs4.BeautifulSoup(response.text, "html.parser")
+        assert (soup.select("#errors")[0].li.text
+                == "Amount has to be a number.")
+        assert soup.select("#description")[0]["value"] == "A new transaction"
+        assert soup.select("#amount")[0]["value"] == "Not a number"
+
     def test_create_form(self, testapp):
         # Retrieve the form
         response = testapp.get("/create", status=200)
