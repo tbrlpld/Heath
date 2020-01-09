@@ -75,17 +75,25 @@ def detail(request: Request) -> Dict:
 )
 def update(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
-    session = request.dbsession
-    transaction = session.query(Transaction).filter_by(
+    dbsession = request.dbsession
+    transaction = dbsession.query(Transaction).filter_by(
         id=transaction_id,
     ).first()
     if not transaction:
         raise HTTPNotFound()
+    return_data = {"transaction": transaction}
     if request.method == "POST":
-        transaction.description = request.POST["description"]
-        transaction.amount = float(request.POST["amount"])
-        return HTTPFound(location="/list")
-    return {"transaction": transaction}
+        try:
+            transaction.amount = float(request.POST["amount"])
+        except ValueError:
+            return_data["errors"] = ["Amount has to be a number."]
+            return_data["description"] = request.POST["description"]
+            return_data["amount"] = request.POST["amount"]
+            return return_data
+        else:
+            transaction.description = request.POST["description"]
+            return HTTPFound(location="/list")
+    return return_data
 
 
 @view_config(

@@ -1,13 +1,20 @@
 {% extends "heath:templates/base.jinja2" %}
 
 {% block content %}
-  <h1>Edit Transaction</h1>
+  <h1>Update Transaction</h1>
+  {% if errors %}
+  <ul id="errors">
+    {% for error in errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
   <form action="" method="post">
     <label for="description">Description</label>
-    <input id="amount" type="text" name="description" id="description" value="{{ transaction.description }}" required>
+    <input id="amount" type="text" name="description" id="description" value="{{ description | default(transaction.description) }}" required>
     <br>
     <label for="amount">Amount</label>
-    <input id="amount" type="number" name="amount" id="amount" step="0.01" value="{{ '%.2f' | format(transaction.amount) }}" required>
+    <input id="amount" type="number" name="amount" id="amount" step="0.01" value="{{ amount | default('%.2f' | format(transaction.amount)) }}" required>
     <br>
     <input type="submit" name="submit" value="Update">
   </form>

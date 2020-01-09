@@ -171,8 +171,32 @@ class TestTransactionUpdateView(object):
         assert soup.find(id="description").text == "New title"
         assert soup.find(id="amount").text == "99.99"
 
-    # TODO: Test invalid amount
+    def test_post_update_with_invalid_amount(
+        self,
+        testapp,
+        example_transactions,
+    ):
+        """Test invalid amount."""
+        response = testapp.post(
+            "/update/1",
+            {
+                "description": "New title",
+                "amount": "Not a number",
+            },
+            status=200,
+        )
+
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
+        # Input data is prefilled
+        assert soup.find("input", id="description")["value"] == "New title"
+        assert soup.find("input", id="amount")["value"] == "Not a number"
+        # Error message is shown
+        error_element = soup.find(id="errors")
+        assert error_element is not None
+        assert "Amount has to be a number" in error_element.text
+
     # TODO: Post with form
+
 
 
 class TestTransactionDeleteView(object):

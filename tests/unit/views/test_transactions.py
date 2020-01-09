@@ -8,7 +8,7 @@ from tests.unit.views.conftest import dummy_request
 
 
 @pytest.fixture
-def example_data_for_unittests(dbsession_for_unittest):
+def example_transactions(dbsession_for_unittest):
     session = dbsession_for_unittest
     from heath.models.transaction import Transaction
     first_transaction = Transaction(
@@ -139,31 +139,31 @@ class TestTransactionListView(object):
 
     def test_all_transactions_returned(
         self,
-        example_data_for_unittests,
+        example_transactions,
         dummy_request_with_dbsession,
     ):
         from heath.views.transactions import transactions_list
         return_data = transactions_list(dummy_request_with_dbsession)
 
         assert "transactions" in return_data
-        assert example_data_for_unittests[0] in return_data["transactions"]
-        assert example_data_for_unittests[1] in return_data["transactions"]
+        assert example_transactions[0] in return_data["transactions"]
+        assert example_transactions[1] in return_data["transactions"]
 
     def test_transactions_in_reverse_order(
         self,
-        example_data_for_unittests,
+        example_transactions,
         dummy_request_with_dbsession,
     ):
         # Test order of transactions (last transaction first in list)
         from heath.views.transactions import transactions_list
         return_data = transactions_list(dummy_request_with_dbsession)
 
-        assert example_data_for_unittests[-1] == return_data["transactions"][0]
-        assert example_data_for_unittests[0] == return_data["transactions"][-1]
+        assert example_transactions[-1] == return_data["transactions"][0]
+        assert example_transactions[0] == return_data["transactions"][-1]
 
     def test_transaction_sum(
         self,
-        example_data_for_unittests,
+        example_transactions,
         dummy_request_with_dbsession,
     ):
         # Add test for remaining budget returned
@@ -179,7 +179,7 @@ class TestTransactionDetailView(object):
     def test_show_only_one_transaction(
         self,
         dbsession_for_unittest,
-        example_data_for_unittests,
+        example_transactions,
     ):
         request = dummy_request(dbsession_for_unittest)
         request.matchdict["transaction_id"] = 1
@@ -211,7 +211,7 @@ class TestTransactionUpdateView(object):
     def test_show_only_one_transaction(
         self,
         dbsession_for_unittest,
-        example_data_for_unittests,
+        example_transactions,
     ):
         request = dummy_request(dbsession_for_unittest)
         request.matchdict["transaction_id"] = 1
@@ -236,7 +236,7 @@ class TestTransactionUpdateView(object):
     def test_post_updates_information(
         self,
         dbsession_for_unittest,
-        example_data_for_unittests,
+        example_transactions,
     ):
         session = dbsession_for_unittest
         request = dummy_request(
@@ -281,6 +281,31 @@ class TestTransactionUpdateView(object):
         with pytest.raises(HTTPNotFound):
             update(request)
 
+    def test_invalid_amount(self, dbsession_for_unittest, example_transactions):
+        """Test handling when amount is not a number."""
+        session = dbsession_for_unittest
+        request = dummy_request(
+            dbsession=session,
+            post={
+                "description": "New Title",
+                "amount": "Not a number",
+            },
+        )
+        request.matchdict["transaction_id"] = 1
+
+        from heath.views.transactions import update
+        response = update(request)
+
+        # Data is returned into the form
+        assert response["errors"][0] == "Amount has to be a number."
+        assert response["description"] == "New Title"
+        assert response["amount"] == "Not a number"
+        # The database content is not updated.
+        from heath.models.transaction import Transaction
+        first_transaction = session.query(Transaction).first()
+        assert first_transaction.description == "First transaction"
+        assert first_transaction.amount == 100.00
+
     # TODO: Test invalid amount
 
 
@@ -290,7 +315,7 @@ class TestTransactionDeleteView(object):
     def test_show_only_one_transaction(
         self,
         dbsession_for_unittest,
-        example_data_for_unittests,
+        example_transactions,
     ):
         request = dummy_request(dbsession_for_unittest)
         request.matchdict["transaction_id"] = 1
@@ -322,7 +347,7 @@ class TestTransactionDeleteView(object):
     def test_empty_post_not_deleteting_transaction(
         self,
         dbsession_for_unittest,
-        example_data_for_unittests,
+        example_transactions,
     ):
         session = dbsession_for_unittest
         request = dummy_request(
@@ -338,12 +363,12 @@ class TestTransactionDeleteView(object):
         # Check that transaction still exists
         from heath.models.transaction import Transaction
         first_transaction = session.query(Transaction).filter_by(id=1).first()
-        assert first_transaction == example_data_for_unittests[0]
+        assert first_transaction == example_transactions[0]
 
     def test_post_deletes_transaction(
         self,
         dbsession_for_unittest,
-        example_data_for_unittests,
+        example_transactions,
     ):
         session = dbsession_for_unittest
         request = dummy_request(
