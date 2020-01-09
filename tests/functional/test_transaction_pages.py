@@ -155,9 +155,24 @@ class TestTransactionUpdateView(object):
         cancel_link = soup.find(href=re.compile("/detail/1"))
         assert cancel_link.text == "Cancel"
 
-    # def test_post_update
+    def test_post_update_data(self, testapp, example_transactions):
+        testapp.post(
+            "/update/1",
+            {
+                "description": "New title",
+                "amount": "99.99",
+            },
+            status=302,
+        )
+
+        # Change should be visible on detail.
+        response = testapp.get("/detail/1", status=200)
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
+        assert soup.find(id="description").text == "New title"
+        assert soup.find(id="amount").text == "99.99"
 
     # TODO: Test invalid amount
+    # TODO: Post with form
 
 
 class TestTransactionDeleteView(object):
