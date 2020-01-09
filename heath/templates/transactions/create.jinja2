@@ -2,12 +2,19 @@
 
 {% block content %}
   <h1>Create Transaction</h1>
+  {% if errors %}
+  <ul id="errors">
+    {% for error in errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
   <form action="" method="post">
     <label for="description">Description</label>
-    <input type="text" name="description" id="description" required>
+    <input id="description" type="text" name="description" required value="{{ description|default('') }}">
     <br>
     <label for="amount">Amount</label>
-    <input type="number" name="amount" id="amount" step="0.01" required>
+    <input id="amount" type="number" name="amount" step="0.01" required value="{{ amount|default('') }}">
     <br>
     <input type="submit" name="submit" value="Create">
   </form>

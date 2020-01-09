@@ -4,11 +4,12 @@
 
 from typing import Dict, Union
 
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy.sql import func
+
 
 from heath.models.transaction import Transaction
 
@@ -18,15 +19,22 @@ from heath.models.transaction import Transaction
     renderer="heath:templates/transactions/create.jinja2",
 )
 def create(request: Request) -> Dict:
+    return_data: Dict = {}
     if request.method == "POST":
+        try:
+            amount = float(request.POST["amount"])
+        except ValueError:
+            return_data["errors"] = ["Amount has to be a number."]
+            return_data["description"] = request.POST["description"]
+            return_data["amount"] = request.POST["amount"]
+            return return_data
         transaction = Transaction(
             description=request.POST["description"],
-            amount=float(request.POST["amount"]),
+            amount=amount,
         )
-        session = request.dbsession
-        session.add(transaction)
+        request.dbsession.add(transaction)
         return HTTPFound(location="/list")
-    return {}
+    return return_data
 
 
 @view_config(
@@ -40,7 +48,7 @@ def transactions_list(request: Request) -> Dict:
     budget = session.query(func.sum(Transaction.amount)).scalar()
     return {
         "transactions": transactions,
-        "budget": budget,
+        "budget": budget or 0.0,
     }
 
 
@@ -52,7 +60,9 @@ def detail(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
 
     session = request.dbsession
-    transaction = session.query(Transaction).filter_by(id=transaction_id).first()
+    transaction = session.query(Transaction).filter_by(
+        id=transaction_id,
+    ).first()
 
     if not transaction:
         raise HTTPNotFound()
@@ -60,22 +70,30 @@ def detail(request: Request) -> Dict:
 
 
 @view_config(
-    route_name="transaction_edit",
+    route_name="transaction_update",
     renderer="heath:templates/transactions/edit.jinja2",
 )
-def edit(request: Request) -> Dict:
+def update(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
-    session = request.dbsession
-    transaction = session.query(Transaction).filter_by(
+    dbsession = request.dbsession
+    transaction = dbsession.query(Transaction).filter_by(
         id=transaction_id,
     ).first()
     if not transaction:
         raise HTTPNotFound()
+    return_data = {"transaction": transaction}
     if request.method == "POST":
-        transaction.description = request.POST["description"]
-        transaction.amount = float(request.POST["amount"])
-        return HTTPFound(location="/list")
-    return {"transaction": transaction}
+        try:
+            transaction.amount = float(request.POST["amount"])
+        except ValueError:
+            return_data["errors"] = ["Amount has to be a number."]
+            return_data["description"] = request.POST["description"]
+            return_data["amount"] = request.POST["amount"]
+            return return_data
+        else:
+            transaction.description = request.POST["description"]
+            return HTTPFound(location="/list")
+    return return_data
 
 
 @view_config(
@@ -91,6 +109,9 @@ def delete(request: Request) -> Dict:
     if not transaction:
         raise HTTPNotFound()
     if request.method == "POST":
-        session.delete(transaction)
-        return HTTPFound(location="/list")
+        if "delete.confirm" in request.POST:
+            session.delete(transaction)
+            return HTTPFound(location="/list")
+        else:
+            raise HTTPBadRequest()
     return {"transaction": transaction}
