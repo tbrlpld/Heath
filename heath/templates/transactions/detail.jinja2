@@ -4,10 +4,10 @@
   <h1>Transaction</h1>
 
   <label for="description">Description</label>
-  <span type="text" name="description">{{ transaction.description }}</span>
+  <span id="description" type="text" name="description">{{ transaction.description }}</span>
   <br>
   <label for="amount">Amount</label>
-  <span type="number" name="amount">{{ "%.2f" | format(transaction.amount) }}</span>
+  <span id="amount" type="number" name="amount">{{ "%.2f" | format(transaction.amount) }}</span>
   <br>
   <a href="{{ request.route_url('transaction_edit', transaction_id=transaction.id) }}">Edit</a>
   <a href="{{ request.route_url('transaction_delete', transaction_id=transaction.id) }}">Delete</a>

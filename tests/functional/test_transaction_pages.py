@@ -6,12 +6,15 @@ import bs4
 import pytest
 
 
+HTML_PARSER = "html.parser"
+
+
 class TestCreateView(object):
     def test_get_create(self, testapp):
         response = testapp.get("/create")
         assert response.status_code == 200
 
-        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         assert soup.h1.text == "Create Transaction"
         forms = soup.select("form")
         assert len(forms) == 1
@@ -48,7 +51,7 @@ class TestCreateView(object):
             status=200,
         )
 
-        soup = bs4.BeautifulSoup(response.text, "html.parser")
+        soup = bs4.BeautifulSoup(response.text, HTML_PARSER)
         assert (soup.select("#errors")[0].li.text
                 == "Amount has to be a number.")
         assert soup.select("#description")[0]["value"] == "A new transaction"
@@ -68,7 +71,7 @@ class TestCreateView(object):
         # Redirect should be to list view and contain the new transaction in
         # a table.
         response = submit_response.follow()
-        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         table = soup.select("table#transactions")[0]
         transaction_cells = table.tbody.tr.find_all("td")
         assert "New Transaction" in transaction_cells[0].text
@@ -76,7 +79,7 @@ class TestCreateView(object):
 
 
 @pytest.fixture
-def example_data(testapp):
+def example_transactions(testapp):
     """Create example transaction for other views."""
     testapp.post(
         "/create",
@@ -101,9 +104,9 @@ class TestListView(object):
         response = testapp.get("/list")
         assert response.status_code == 200
 
-    def test_for_links_in_list(self, testapp, example_data):
+    def test_for_links_in_list(self, testapp, example_transactions):
         response = testapp.get("/list")
-        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         link_tags = soup.select("a")
         all_link_urls = [a["href"] for a in link_tags]
         all_link_url_string = " ".join(all_link_urls)
@@ -112,19 +115,30 @@ class TestListView(object):
         assert "/create" in all_link_url_string
 
 
-# TODO: Test  the detail view
+class TestDetailView(object):
+    """Test for the transaction detail view."""
+    def test_404_when_not_exists(self, testapp):
+        testapp.get("/detail/1", status=404)
 
+    def test_get_detail(self, testapp, example_transactions):
+        testapp.get("/detail/1", status=200)
+
+    def test_detail_page_content(self, testapp, example_transactions):
+        response = testapp.get("/detail/1", status=200)
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
+        assert soup.select("#description")[0].text == "First transaction"
+        assert soup.select("#amount")[0].text == "100.00"
 
 
 # TODO: Test the edit view.
 # TODO: Test invalid amount
 
 class TestDeleteView(object):
-    def test_get_delete(self, testapp, example_data):
+    def test_get_delete(self, testapp, example_transactions):
         response = testapp.get("/delete/1")
         assert response.status_code == 200
 
-        soup = bs4.BeautifulSoup(response.body, "html.parser")
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         forms = soup.select("form")
         assert len(forms) == 1
 
@@ -134,11 +148,11 @@ class TestDeleteView(object):
         assert form.input["name"] == "delete.confirm"
         assert form.input["type"] == "submit"
 
-    def test_post_delete_fail(self, testapp, example_data):
+    def test_post_delete_fail(self, testapp, example_transactions):
         """Posting no data to the view should fail."""
         testapp.post("/delete/1", status=400)
 
-    def test_post_delete_success(self, testapp, example_data):
+    def test_post_delete_success(self, testapp, example_transactions):
         """Posting `delete.confirm` to the endpoint should succeed."""
         testapp.post(
             "/delete/1",
@@ -148,7 +162,7 @@ class TestDeleteView(object):
         # Check that detail is not available anymore
         testapp.get("/detail/1", status=404)
 
-    def test_form_functionality(self, testapp, example_data):
+    def test_form_functionality(self, testapp, example_transactions):
         """
         Test form functionality via WebTest.
 
