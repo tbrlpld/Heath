@@ -4,7 +4,7 @@
 
 import pytest
 
-from tests.views.conftest import dummy_request
+from tests.unit.views.conftest import dummy_request
 
 
 @pytest.fixture
@@ -280,6 +280,8 @@ class TestEditView(object):
         from pyramid.httpexceptions import HTTPNotFound
         with pytest.raises(HTTPNotFound):
             edit(request)
+
+    # TODO: Test invalid amount
 
 
 class TestDeleteView(object):

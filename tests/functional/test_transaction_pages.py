@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Create tests in the pytest style. """
+"""Functional tests for the transaction pages."""
 
 import bs4
 import pytest
@@ -23,12 +23,6 @@ def example_data(app, initialized_database):
     session.add(first_transaction)
     session.add(second_transaction)
     session.commit()
-
-
-class TestHome(object):
-    def test_get_home(self, testapp):
-        response = testapp.get("/")
-        assert response.status_code == 200
 
 
 class TestCreateView(object):
@@ -115,11 +109,12 @@ class TestListView(object):
         assert "/create" in all_link_url_string
 
 
-# TODO: Add tests for the detail view
+# TODO: Test  the detail view
 
 
 
-# Add functional tests to the edit view.
+# TODO: Test the edit view.
+# TODO: Test invalid amount
 
 class TestDeleteView(object):
     def test_get_delete(self, testapp, example_data):
