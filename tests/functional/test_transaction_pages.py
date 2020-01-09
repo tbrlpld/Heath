@@ -4,6 +4,7 @@
 
 import bs4
 import pytest
+import re
 
 
 HTML_PARSER = "html.parser"
@@ -102,17 +103,19 @@ def example_transactions(testapp):
 class TestTransactionListView(object):
     def test_get_list(self, testapp):
         response = testapp.get("/list")
+
         assert response.status_code == 200
 
     def test_for_links_in_list(self, testapp, example_transactions):
         response = testapp.get("/list")
+
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
-        link_tags = soup.select("a")
-        all_link_urls = [a["href"] for a in link_tags]
-        all_link_url_string = " ".join(all_link_urls)
-        assert "/detail/1" in all_link_url_string
-        assert "/detail/2" in all_link_url_string
-        assert "/create" in all_link_url_string
+        first_transaction_link = soup.find(href=re.compile("/detail/1"))
+        assert first_transaction_link is not None
+        second_transaction_link = soup.find(href=re.compile("/detail/2"))
+        assert second_transaction_link is not None
+        create_link = soup.find(href=re.compile("/create"))
+        assert create_link is not None
 
 
 class TestTransactionDetailView(object):
@@ -125,9 +128,14 @@ class TestTransactionDetailView(object):
 
     def test_detail_page_content(self, testapp, example_transactions):
         response = testapp.get("/detail/1", status=200)
+
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         assert soup.select("#description")[0].text == "First transaction"
         assert soup.select("#amount")[0].text == "100.00"
+        update_link = soup.find(href=re.compile("/update/1"))
+        assert update_link.text == "Update"
+        delete_link = soup.find(href=re.compile("/delete/1"))
+        assert delete_link.text == "Delete"
 
 
 class TestTransactionUpdateView(object):
@@ -140,39 +148,51 @@ class TestTransactionUpdateView(object):
 
     def test_update_page_content(self, testapp, example_transactions):
         response = testapp.get("/update/1", status=200)
+
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         assert soup.select("#description")[0]["value"] == "First transaction"
         assert soup.select("#amount")[0]["value"] == "100.00"
+        cancel_link = soup.find(href=re.compile("/detail/1"))
+        assert cancel_link.text == "Cancel"
+
+    # def test_post_update
 
     # TODO: Test invalid amount
 
 
 class TestTransactionDeleteView(object):
+    """Functional test for the transaction delete view."""
     def test_get_delete(self, testapp, example_transactions):
         response = testapp.get("/delete/1")
-        assert response.status_code == 200
 
+        assert response.status_code == 200
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         forms = soup.select("form")
         assert len(forms) == 1
-
         form = forms[0]
         assert form["method"] == "post"
         assert form["action"] == ""
         assert form.input["name"] == "delete.confirm"
         assert form.input["type"] == "submit"
+        cancel_link = soup.find(href=re.compile("/detail/1"))
+        assert cancel_link.text == "Cancel"
 
-    def test_post_delete_fail(self, testapp, example_transactions):
+    def test_post_no_data_to_delete_fails(self, testapp, example_transactions):
         """Posting no data to the view should fail."""
         testapp.post("/delete/1", status=400)
 
-    def test_post_delete_success(self, testapp, example_transactions):
+    def test_post_confirmation_delete_succeeds(
+        self,
+        testapp,
+        example_transactions,
+    ):
         """Posting `delete.confirm` to the endpoint should succeed."""
         testapp.post(
             "/delete/1",
             {"delete.confirm": "delete.confirm"},
             status=302,
         )
+
         # Check that detail is not available anymore
         testapp.get("/detail/1", status=404)
 
@@ -187,8 +207,10 @@ class TestTransactionDeleteView(object):
         # Get form
         response = testapp.get("/delete/1", status=200)
         form = response.form
+
         # Submitting the form
         response = form.submit("delete.confirm")
+
         assert response.status_code == 302
         # Check that detail is not available anymore
         testapp.get("/detail/1", status=404)
