@@ -9,7 +9,7 @@ import pytest
 HTML_PARSER = "html.parser"
 
 
-class TestCreateView(object):
+class TestTransactionCreateView(object):
     def test_get_create(self, testapp):
         response = testapp.get("/create")
         assert response.status_code == 200
@@ -99,7 +99,7 @@ def example_transactions(testapp):
     )
 
 
-class TestListView(object):
+class TestTransactionListView(object):
     def test_get_list(self, testapp):
         response = testapp.get("/list")
         assert response.status_code == 200
@@ -115,7 +115,7 @@ class TestListView(object):
         assert "/create" in all_link_url_string
 
 
-class TestDetailView(object):
+class TestTransactionDetailView(object):
     """Test for the transaction detail view."""
     def test_404_when_not_exists(self, testapp):
         testapp.get("/detail/1", status=404)
@@ -130,10 +130,24 @@ class TestDetailView(object):
         assert soup.select("#amount")[0].text == "100.00"
 
 
-# TODO: Test the edit view.
-# TODO: Test invalid amount
+class TestTransactionUpdateView(object):
+    """Test for the transaction detail view."""
+    def test_404_when_not_exists(self, testapp):
+        testapp.get("/edit/1", status=404)
 
-class TestDeleteView(object):
+    def test_get_detail(self, testapp, example_transactions):
+        testapp.get("/edit/1", status=200)
+
+    def test_detail_page_content(self, testapp, example_transactions):
+        response = testapp.get("/edit/1", status=200)
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
+        assert soup.select("#description")[0]["value"] == "First transaction"
+        assert soup.select("#amount")[0]["value"] == "100.00"
+
+    # TODO: Test invalid amount
+
+
+class TestTransactionDeleteView(object):
     def test_get_delete(self, testapp, example_transactions):
         response = testapp.get("/delete/1")
         assert response.status_code == 200
