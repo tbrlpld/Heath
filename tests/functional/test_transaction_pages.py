@@ -19,9 +19,9 @@ class TestTransactionCreateView(object):
         assert soup.h1.text == "Create Transaction"
         forms = soup.select("form")
         assert len(forms) == 1
-        description_input = soup.form.select("input#description")[0]
+        description_input = soup.form.find("input", id="description")
         assert description_input["name"] == "description"
-        amount_input = soup.form.select("input#amount")[0]
+        amount_input = soup.form.find("input", id="amount")
         assert amount_input["name"] == "amount"
         assert amount_input["step"] == "0.01"
 
@@ -55,8 +55,8 @@ class TestTransactionCreateView(object):
         soup = bs4.BeautifulSoup(response.text, HTML_PARSER)
         assert (soup.select("#errors")[0].li.text
                 == "Amount has to be a number.")
-        assert soup.select("#description")[0]["value"] == "A new transaction"
-        assert soup.select("#amount")[0]["value"] == "Not a number"
+        assert soup.find(id="description")["value"] == "A new transaction"
+        assert soup.find(id="amount")["value"] == "Not a number"
 
     def test_submit_create_form(self, testapp):
         """Create a transaction by filling and submitting the form."""
@@ -73,7 +73,7 @@ class TestTransactionCreateView(object):
         # a table.
         response = submit_response.follow()
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
-        table = soup.select("table#transactions")[0]
+        table = soup.find("table", id="transactions")
         transaction_cells = table.tbody.tr.find_all("td")
         assert "New Transaction" in transaction_cells[0].text
         assert "100" in transaction_cells[1].text
@@ -130,8 +130,8 @@ class TestTransactionDetailView(object):
         response = testapp.get("/detail/1", status=200)
 
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
-        assert soup.select("#description")[0].text == "First transaction"
-        assert soup.select("#amount")[0].text == "100.00"
+        assert soup.find(id="description").text == "First transaction"
+        assert soup.find(id="amount").text == "100.00"
         update_link = soup.find(href=re.compile("/update/1"))
         assert update_link.text == "Update"
         delete_link = soup.find(href=re.compile("/delete/1"))
@@ -150,8 +150,8 @@ class TestTransactionUpdateView(object):
         response = testapp.get("/update/1", status=200)
 
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
-        assert soup.select("#description")[0]["value"] == "First transaction"
-        assert soup.select("#amount")[0]["value"] == "100.00"
+        assert soup.find(id="description")["value"] == "First transaction"
+        assert soup.find(id="amount")["value"] == "100.00"
         cancel_link = soup.find(href=re.compile("/detail/1"))
         assert cancel_link.text == "Cancel"
 
