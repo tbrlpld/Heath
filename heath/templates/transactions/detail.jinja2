@@ -9,6 +9,6 @@
   <label for="amount">Amount</label>
   <span id="amount" type="number" name="amount">{{ "%.2f" | format(transaction.amount) }}</span>
   <br>
-  <a href="{{ request.route_url('transaction_edit', transaction_id=transaction.id) }}">Edit</a>
+  <a href="{{ request.route_url('transaction_update', transaction_id=transaction.id) }}">Update</a>
   <a href="{{ request.route_url('transaction_delete', transaction_id=transaction.id) }}">Delete</a>
 {% endblock content %}

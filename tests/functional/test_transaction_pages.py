@@ -133,13 +133,13 @@ class TestTransactionDetailView(object):
 class TestTransactionUpdateView(object):
     """Test for the transaction detail view."""
     def test_404_when_not_exists(self, testapp):
-        testapp.get("/edit/1", status=404)
+        testapp.get("/update/1", status=404)
 
-    def test_get_detail(self, testapp, example_transactions):
-        testapp.get("/edit/1", status=200)
+    def test_get_update(self, testapp, example_transactions):
+        testapp.get("/update/1", status=200)
 
-    def test_detail_page_content(self, testapp, example_transactions):
-        response = testapp.get("/edit/1", status=200)
+    def test_update_page_content(self, testapp, example_transactions):
+        response = testapp.get("/update/1", status=200)
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         assert soup.select("#description")[0]["value"] == "First transaction"
         assert soup.select("#amount")[0]["value"] == "100.00"

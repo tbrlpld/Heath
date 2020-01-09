@@ -70,7 +70,7 @@ def detail(request: Request) -> Dict:
 
 
 @view_config(
-    route_name="transaction_edit",
+    route_name="transaction_update",
     renderer="heath:templates/transactions/edit.jinja2",
 )
 def edit(request: Request) -> Dict:
