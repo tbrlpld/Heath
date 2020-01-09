@@ -150,6 +150,7 @@ class TestTransactionUpdateView(object):
         response = testapp.get("/update/1", status=200)
 
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
+        assert "Update" in soup.h1.text
         assert soup.find(id="description")["value"] == "First transaction"
         assert soup.find(id="amount")["value"] == "100.00"
         cancel_link = soup.find(href=re.compile("/detail/1"))
