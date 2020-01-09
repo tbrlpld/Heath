@@ -196,8 +196,27 @@ class TestTransactionUpdateView(object):
         assert error_element is not None
         assert "Amount has to be a number" in error_element.text
 
-    # TODO: Post with form
+    def test_post_update_with_form(self, testapp, example_transactions):
+        """Post with form."""
+        # Retrieve the form
+        response = testapp.get("/update/1", status=200)
+        form = response.form
+        # Fill the form
+        form["description"] = "New Title"
+        form["amount"] = "99.99"
 
+        # Submit the form
+        submit_response = form.submit("create")
+
+        assert submit_response.status_code == 302
+        # Redirect should be to list view and show the new data
+        response = submit_response.follow()
+        soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
+        table = soup.find("table", id="transactions")
+        description_cell = table.tbody.find("td", text=re.compile("Title"))
+        assert "New Title" in description_cell.text
+        amount_cell = description_cell.find_next_sibling("td")
+        assert "99.99" in amount_cell.text
 
 
 class TestTransactionDeleteView(object):

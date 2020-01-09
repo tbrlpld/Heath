@@ -306,8 +306,6 @@ class TestTransactionUpdateView(object):
         assert first_transaction.description == "First transaction"
         assert first_transaction.amount == 100.00
 
-    # TODO: Test invalid amount
-
 
 class TestTransactionDeleteView(object):
     """Unit tests for the transaction delete view."""
