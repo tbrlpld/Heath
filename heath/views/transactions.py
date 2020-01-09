@@ -73,7 +73,7 @@ def detail(request: Request) -> Dict:
     route_name="transaction_update",
     renderer="heath:templates/transactions/edit.jinja2",
 )
-def edit(request: Request) -> Dict:
+def update(request: Request) -> Dict:
     transaction_id = request.matchdict.get("transaction_id")
     session = request.dbsession
     transaction = session.query(Transaction).filter_by(

@@ -27,7 +27,7 @@ def example_data_for_unittests(dbsession_for_unittest):
     )
 
 
-class TestCreateView(object):
+class TestTransactionCreateView(object):
     """Test for the create view."""
 
     def test_create_view(self, dbsession_for_unittest):
@@ -116,7 +116,7 @@ class TestCreateView(object):
         assert first_transaction is None
 
 
-class TestListView(object):
+class TestTransactionListView(object):
     """Unit tests for transaction list view."""
 
     @pytest.fixture
@@ -173,7 +173,7 @@ class TestListView(object):
         assert return_data["budget"] == 60.0
 
 
-class TestDetailView(object):
+class TestTransactionDetailView(object):
     """Tests for the transaction detail view."""
 
     def test_show_only_one_transaction(
@@ -205,7 +205,7 @@ class TestDetailView(object):
             detail(request)
 
 
-class TestEditView(object):
+class TestTransactionUpdateView(object):
     """Unit tests for the transaction edit view."""
 
     def test_show_only_one_transaction(
@@ -216,8 +216,8 @@ class TestEditView(object):
         request = dummy_request(dbsession_for_unittest)
         request.matchdict["transaction_id"] = 1
 
-        from heath.views.transactions import edit
-        return_data = edit(request)
+        from heath.views.transactions import update
+        return_data = update(request)
 
         assert "transaction" in return_data
         assert return_data["transaction"].id == 1
@@ -229,9 +229,9 @@ class TestEditView(object):
         request.matchdict["transaction_id"] = 1
 
         from pyramid.httpexceptions import HTTPNotFound
-        from heath.views.transactions import edit
+        from heath.views.transactions import update
         with pytest.raises(HTTPNotFound):
-            edit(request)
+            update(request)
 
     def test_post_updates_information(
         self,
@@ -248,10 +248,10 @@ class TestEditView(object):
         )
         request.matchdict["transaction_id"] = 1
 
-        from heath.views.transactions import edit
+        from heath.views.transactions import update
         from pyramid.httpexceptions import HTTPFound
 
-        response = edit(request)
+        response = update(request)
         assert isinstance(response, HTTPFound)
 
         # Check persistence in database
@@ -276,15 +276,15 @@ class TestEditView(object):
         )
         request.matchdict["transaction_id"] = 1
 
-        from heath.views.transactions import edit
+        from heath.views.transactions import update
         from pyramid.httpexceptions import HTTPNotFound
         with pytest.raises(HTTPNotFound):
-            edit(request)
+            update(request)
 
     # TODO: Test invalid amount
 
 
-class TestDeleteView(object):
+class TestTransactionDeleteView(object):
     """Unit tests for the transaction delete view."""
 
     def test_show_only_one_transaction(
