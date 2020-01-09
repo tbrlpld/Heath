@@ -6,25 +6,6 @@ import bs4
 import pytest
 
 
-@pytest.fixture
-def example_data(app, initialized_database):
-    session_factory = app.registry["dbsession_factory"]
-    session = session_factory()
-
-    from heath.models.transaction import Transaction
-    first_transaction = Transaction(
-        description="First transaction",
-        amount=100.00,
-    )
-    second_transaction = Transaction(
-        description="Second transaction",
-        amount=-40.00,
-    )
-    session.add(first_transaction)
-    session.add(second_transaction)
-    session.commit()
-
-
 class TestCreateView(object):
     def test_get_create(self, testapp):
         response = testapp.get("/create")
@@ -73,7 +54,8 @@ class TestCreateView(object):
         assert soup.select("#description")[0]["value"] == "A new transaction"
         assert soup.select("#amount")[0]["value"] == "Not a number"
 
-    def test_create_form(self, testapp):
+    def test_submit_create_form(self, testapp):
+        """Create a transaction by filling and submitting the form."""
         # Retrieve the form
         response = testapp.get("/create", status=200)
         form = response.form
@@ -91,6 +73,27 @@ class TestCreateView(object):
         transaction_cells = table.tbody.tr.find_all("td")
         assert "New Transaction" in transaction_cells[0].text
         assert "100" in transaction_cells[1].text
+
+
+@pytest.fixture
+def example_data(testapp):
+    """Create example transaction for other views."""
+    testapp.post(
+        "/create",
+        {
+            "description": "First transaction",
+            "amount": "100.00",
+        },
+        status=302,
+    )
+    testapp.post(
+        "/create",
+        {
+            "description": "Second transaction",
+            "amount": "-40.00",
+        },
+        status=302,
+    )
 
 
 class TestListView(object):
