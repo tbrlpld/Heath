@@ -1,3 +1,7 @@
 [run]
 source = heath
-omit = heath/test*
+omit = 
+	heath/test*
+	heath/pshell*
+	heath/scripts*
+branch = True
