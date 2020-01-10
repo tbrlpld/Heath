@@ -37,4 +37,12 @@ def dbsession_for_unittest():
 
 
 def dummy_request(dbsession, **kwargs):
-    return testing.DummyRequest(dbsession=dbsession, **kwargs)
+    dummy_request = testing.DummyRequest(dbsession=dbsession, **kwargs)
+    # Make route_url function always return a slash. This is to prevent
+    # look up errors when trying to generate URLs from route names.
+    # Because during unit testing of the view functions there is no app context
+    # and the route configuration is not known during test. Therefore, the
+    # lookup has to fail. By adding this "mock" function the route lookup
+    # will always return a valid path.
+    dummy_request.route_url = lambda *_, **__: "/"
+    return dummy_request
