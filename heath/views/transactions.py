@@ -80,6 +80,13 @@ class TransactionView(object):
         self.transaction.amount = self.amount
         self.dbsession.add(self.transaction)
 
+    def confirmed_deletion(self) -> bool:
+        """Delete if confirmed. Return info if deletion happened."""
+        if "delete.confirm" in self.request.POST:
+            self.dbsession.delete(self.transaction)
+            return True
+        return False
+
     def to_dict(self) -> Dict:
         return self.__dict__
 
@@ -136,17 +143,13 @@ class TransactionView(object):
         renderer="heath:templates/transactions/delete.jinja2",
     )
     def delete(self) -> Dict:
-        transaction_id = self.request.matchdict.get("transaction_id")
-        dbsession = self.request.dbsession
-        transaction = dbsession.query(Transaction).filter_by(
-            id=transaction_id,
-        ).first()
-        if not transaction:
+        self.get_transactions()
+        if not self.transaction:
             raise HTTPNotFound()
+
         if self.request.method == "POST":
-            if "delete.confirm" in self.request.POST:
-                dbsession.delete(transaction)
+            if self.confirmed_deletion():
                 return HTTPFound(self.request.route_url("transaction.list"))
             else:
                 raise HTTPBadRequest()
-        return {"transaction": transaction}
+        return self.to_dict()
