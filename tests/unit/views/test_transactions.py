@@ -54,14 +54,14 @@ class TestTransactionCreateView(object):
         }
         return dummy_post_request
 
-    def test_empty_response_when_request_wo_payload(
+    def test_no_errors_on_get(
         self,
         dummy_get_request,
     ):
         from heath.views.transactions import TransactionView
         response = TransactionView(dummy_get_request).create()
 
-        assert response == {}
+        assert response["errors"] == []
 
     def test_redirect_after_successful_creation(
         self,

@@ -2,7 +2,7 @@
 
 """Define views regarding transactions."""
 
-from typing import Dict
+from typing import Dict, List
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.request import Request
@@ -16,30 +16,48 @@ class TransactionView(object):
     """View class for transaction views."""
 
     def __init__(self, request: Request):
-        self.request = request
+        self.request: Request = request
+        self.dbsession = self.request.dbsession
+
+        self.errors: List[str] = []
+
+    def get_post_data(self):
+        """Save the values from POST to view object."""
+        self.description = self.request.POST.get("description")
+        self.amount = self.request.POST.get("amount")
+
+    def validate_data(self) -> bool:
+        """Validate data. Return True or False. Set error message."""
+        try:
+            self.amount = float(self.amount)
+        except (ValueError, TypeError):
+            self.errors.append("Amount has to be a number.")
+            return False
+        return True
+
+    def save_transaction(self):
+        transaction = Transaction(
+            description=self.description,
+            amount=self.amount,
+        )
+        self.dbsession.add(transaction)
+
+    def to_dict(self):
+        return self.__dict__
+
+    # View Methods
 
     @view_config(
         route_name="transaction.create",
         renderer="heath:templates/transactions/create.jinja2",
     )
     def create(self) -> Dict:
-        return_data: Dict = {}
         if self.request.method == "POST":
-            try:
-                amount = float(self.request.POST["amount"])
-            except ValueError:
-                return_data["errors"] = ["Amount has to be a number."]
-                return_data["description"] = self.request.POST["description"]
-                return_data["amount"] = self.request.POST["amount"]
-                return return_data
-            transaction = Transaction(
-                description=self.request.POST["description"],
-                amount=amount,
-            )
-            self.request.dbsession.add(transaction)
-            return HTTPFound(self.request.route_url("transaction.list"))
-        return return_data
-
+            self.get_post_data()
+            if self.validate_data():
+                self.save_transaction()
+                return HTTPFound(self.request.route_url("transaction.list"))
+        return self.to_dict()
 
     @view_config(
         route_name="transaction.list",
