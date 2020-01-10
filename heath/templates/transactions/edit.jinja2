@@ -14,7 +14,7 @@
     <input id="amount" type="text" name="description" id="description" value="{{ description | default(transaction.description) }}" required>
     <br>
     <label for="amount">Amount</label>
-    <input id="amount" type="number" name="amount" id="amount" step="0.01" value="{{ amount | default('%.2f' | format(transaction.amount)) }}" required>
+    <input id="amount" type="number" name="amount" id="amount" step="0.01" value="{{ amount or '%.2f' | format(transaction.amount) }}" required>
     <br>
     <input type="submit" name="submit" value="Update">
   </form>

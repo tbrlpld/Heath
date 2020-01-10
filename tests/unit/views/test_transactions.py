@@ -309,7 +309,7 @@ class TestTransactionUpdateView(object):
         # Data is returned into the form
         assert response["errors"][0] == "Amount has to be a number."
         assert response["description"] == "New Title"
-        assert response["amount"] == "Not a number"
+        assert response["amount"] == None
         # The database content is not updated.
         from heath.models.transaction import Transaction
         first_transaction = dbsession_for_unittest.query(Transaction).first()

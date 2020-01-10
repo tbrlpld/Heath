@@ -24,12 +24,11 @@ class TransactionView(object):
             "transaction_id",
             "",
         )
-        self.transactions: List[Transaction]
+        self.transactions: Optional[List[Transaction]] = None
         self.budget: float
-        self.transaction: Transaction
+        self.transaction: Optional[Transaction] = None
         self.description: str
         self.amount: Optional[float] = None
-
         self.errors: List[str] = []
 
     def get_transactions(self):
@@ -74,11 +73,12 @@ class TransactionView(object):
         return True
 
     def save_transaction(self):
-        transaction: Transaction = Transaction(
-            description=self.description,
-            amount=self.amount,
-        )
-        self.dbsession.add(transaction)
+        """Save transaction with the current data."""
+        if self.transaction is None:
+            self.transaction = Transaction()
+        self.transaction.description = self.description
+        self.transaction.amount = self.amount
+        self.dbsession.add(self.transaction)
 
     def to_dict(self) -> Dict:
         return self.__dict__
@@ -120,30 +120,15 @@ class TransactionView(object):
         renderer="heath:templates/transactions/edit.jinja2",
     )
     def update(self) -> Dict:
-        transaction_id = self.request.matchdict.get("transaction_id")
-        dbsession = self.request.dbsession
-        transaction = dbsession.query(Transaction).filter_by(
-            id=transaction_id,
-        ).first()
-        if transaction is None:
+        self.get_transactions()
+        if not self.transaction:
             raise HTTPNotFound()
 
-        return_data = {"transaction": transaction}
         if self.request.method == "POST":
-            description = self.request.POST.get("description", "")
-            amount = self.request.POST.get("amount", "")
-            if description and amount:
-                try:
-                    transaction.amount = float(amount)
-                except ValueError:
-                    return_data["errors"] = ["Amount has to be a number."]
-                    return_data["description"] = description
-                    return_data["amount"] = amount
-                    return return_data
-                else:
-                    transaction.description = description
-                    return HTTPFound(self.request.route_url("transaction.list"))
-        return return_data
+            if self.validate_post_data():
+                self.save_transaction()
+                return HTTPFound(self.request.route_url("transaction.list"))
+        return self.to_dict()
 
 
     @view_config(

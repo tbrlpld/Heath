@@ -198,7 +198,8 @@ class TestTransactionUpdateView(object):
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         # Input data is prefilled
         assert soup.find("input", id="description")["value"] == "New title"
-        assert soup.find("input", id="amount")["value"] == "Not a number"
+        # The original value should be set back when the amount is invalid
+        assert soup.find("input", id="amount")["value"] == "100.00"
         # Error message is shown
         error_element = soup.find(id="errors")
         assert error_element is not None
