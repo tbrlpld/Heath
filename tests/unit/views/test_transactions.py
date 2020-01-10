@@ -247,7 +247,7 @@ class TestTransactionUpdateView(object):
         from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPNotFound
         with pytest.raises(HTTPNotFound):
-            TransactionView(dummy_get_request).update()
+            TransactionView(dummy_get_request).update_get()
 
     def test_return_transaction_on_get(
         self,
@@ -257,7 +257,7 @@ class TestTransactionUpdateView(object):
         dummy_get_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_get_request).update()
+        response = TransactionView(dummy_get_request).update_get()
 
         assert "transaction" in response
         assert response["transaction"].id == 1
@@ -271,7 +271,7 @@ class TestTransactionUpdateView(object):
         dbsession_for_unittest,
     ):
         from heath.views.transactions import TransactionView
-        TransactionView(dummy_post_update_request).update()
+        TransactionView(dummy_post_update_request).update_post()
 
         # Check persistence in database
         from heath.models.transaction import Transaction
@@ -286,7 +286,7 @@ class TestTransactionUpdateView(object):
         example_transactions,
     ):
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_post_update_request).update()
+        response = TransactionView(dummy_post_update_request).update_post()
 
         from pyramid.httpexceptions import HTTPFound
         assert isinstance(response, HTTPFound)
@@ -301,7 +301,7 @@ class TestTransactionUpdateView(object):
         dummy_post_update_request.POST["amount"] = "Not a number"
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_post_update_request).update()
+        response = TransactionView(dummy_post_update_request).update_post()
 
         # Data is returned into the form
         assert response["errors"][0] == "Amount has to be a number."

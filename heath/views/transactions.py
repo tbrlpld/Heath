@@ -135,18 +135,29 @@ class TransactionView(object):
     @view_config(
         route_name="transaction.update",
         renderer="heath:templates/transactions/edit.jinja2",
+        request_method="GET",
     )
-    def update(self) -> Dict:
+    def update_get(self) -> Dict:
         self.get_transactions()
         if not self.transaction:
             raise HTTPNotFound()
 
-        if self.request.method == "POST":
-            if self.validate_post_data():
-                self.save_transaction()
-                return HTTPFound(self.request.route_url("transaction.list"))
         return self.to_dict()
 
+    @view_config(
+        route_name="transaction.update",
+        renderer="heath:templates/transactions/edit.jinja2",
+        request_method="POST",
+    )
+    def update_post(self) -> Dict:
+        self.get_transactions()
+        if not self.transaction:
+            raise HTTPNotFound()
+
+        if self.validate_post_data():
+            self.save_transaction()
+            return HTTPFound(self.request.route_url("transaction.list"))
+        return self.to_dict()
 
     @view_config(
         route_name="transaction.delete",
