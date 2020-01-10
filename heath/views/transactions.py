@@ -82,20 +82,24 @@ class TransactionView(object):
         transaction = dbsession.query(Transaction).filter_by(
             id=transaction_id,
         ).first()
-        if not transaction:
+        if transaction is None:
             raise HTTPNotFound()
+
         return_data = {"transaction": transaction}
         if self.request.method == "POST":
-            try:
-                transaction.amount = float(self.request.POST["amount"])
-            except ValueError:
-                return_data["errors"] = ["Amount has to be a number."]
-                return_data["description"] = self.request.POST["description"]
-                return_data["amount"] = self.request.POST["amount"]
-                return return_data
-            else:
-                transaction.description = self.request.POST["description"]
-                return HTTPFound(self.request.route_url("transaction.list"))
+            description = self.request.POST.get("description", "")
+            amount = self.request.POST.get("amount", "")
+            if description and amount:
+                try:
+                    transaction.amount = float(amount)
+                except ValueError:
+                    return_data["errors"] = ["Amount has to be a number."]
+                    return_data["description"] = description
+                    return_data["amount"] = amount
+                    return return_data
+                else:
+                    transaction.description = description
+                    return HTTPFound(self.request.route_url("transaction.list"))
         return return_data
 
 
