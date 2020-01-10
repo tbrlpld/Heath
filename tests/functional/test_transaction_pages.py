@@ -56,7 +56,7 @@ class TestTransactionCreateView(object):
         assert (soup.select("#errors")[0].li.text
                 == "Amount has to be a number.")
         assert soup.find(id="description")["value"] == "A new transaction"
-        assert soup.find(id="amount")["value"] == "Not a number"
+        assert soup.find(id="amount")["value"] == ""
 
     def test_submit_create_form(self, testapp):
         """Create a transaction by filling and submitting the form."""

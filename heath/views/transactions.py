@@ -28,7 +28,7 @@ class TransactionView(object):
         self.budget: float
         self.transaction: Transaction
         self.description: str
-        self.amount: Optional[float]
+        self.amount: Optional[float] = None
 
         self.errors: List[str] = []
 
@@ -57,22 +57,17 @@ class TransactionView(object):
                 Transaction.created.desc(),
             ).all()
 
-
     def get_budget(self):
         retrieved_budget = self.dbsession.query(
             func.sum(Transaction.amount),
         ).scalar()
         self.budget = retrieved_budget or 0.0
 
-    def get_post_data(self):
-        """Save the values from POST to view object."""
-        self.description = self.request.POST.get("description", "")
-        self.amount = self.request.POST.get("amount", "")
-
-    def validate_data(self) -> bool:
+    def validate_post_data(self) -> bool:
         """Validate data. Return True or False. Set error message."""
+        self.description = self.request.POST.get("description", "")
         try:
-            self.amount = float(self.amount)
+            self.amount = float(self.request.POST.get("amount", ""))
         except (ValueError, TypeError):
             self.errors.append("Amount has to be a number.")
             return False
@@ -96,8 +91,7 @@ class TransactionView(object):
     )
     def create(self) -> Union[Dict, HTTPFound]:
         if self.request.method == "POST":
-            self.get_post_data()
-            if self.validate_data():
+            if self.validate_post_data():
                 self.save_transaction()
                 return HTTPFound(self.request.route_url("transaction.list"))
         return self.to_dict()

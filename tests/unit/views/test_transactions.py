@@ -125,7 +125,7 @@ class TestTransactionCreateView(object):
 
         assert response["errors"][0] == "Amount has to be a number."
         assert response["description"] == "New Transaction"
-        assert response["amount"] == "Not a number"
+        assert response["amount"] is None
         # Verify no creation in database
         from heath.models.transaction import Transaction
         first_transaction = dbsession_for_unittest.query(Transaction).first()
