@@ -33,7 +33,7 @@ def create(request: Request) -> Dict:
             amount=amount,
         )
         request.dbsession.add(transaction)
-        return HTTPFound(location="/transaction/")
+        return HTTPFound(request.route_url("transaction.list"))
     return return_data
 
 
