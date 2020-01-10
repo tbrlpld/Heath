@@ -15,7 +15,7 @@ from heath.models.transaction import Transaction
 
 
 @view_config(
-    route_name="transaction_create",
+    route_name="transaction.create",
     renderer="heath:templates/transactions/create.jinja2",
 )
 def create(request: Request) -> Dict:
@@ -33,12 +33,12 @@ def create(request: Request) -> Dict:
             amount=amount,
         )
         request.dbsession.add(transaction)
-        return HTTPFound(location="/list")
+        return HTTPFound(location="/transaction/")
     return return_data
 
 
 @view_config(
-    route_name="transactions_list",
+    route_name="transaction.list",
     renderer="heath:templates/transactions/list.jinja2",
 )
 def transactions_list(request: Request) -> Dict:
@@ -53,7 +53,7 @@ def transactions_list(request: Request) -> Dict:
 
 
 @view_config(
-    route_name="transaction_detail",
+    route_name="transaction.detail",
     renderer="heath:templates/transactions/detail.jinja2",
 )
 def detail(request: Request) -> Dict:
@@ -70,7 +70,7 @@ def detail(request: Request) -> Dict:
 
 
 @view_config(
-    route_name="transaction_update",
+    route_name="transaction.update",
     renderer="heath:templates/transactions/edit.jinja2",
 )
 def update(request: Request) -> Dict:
@@ -92,12 +92,12 @@ def update(request: Request) -> Dict:
             return return_data
         else:
             transaction.description = request.POST["description"]
-            return HTTPFound(location="/list")
+            return HTTPFound(location="/transaction/")
     return return_data
 
 
 @view_config(
-    route_name="transaction_delete",
+    route_name="transaction.delete",
     renderer="heath:templates/transactions/delete.jinja2",
 )
 def delete(request: Request) -> Dict:
@@ -111,7 +111,7 @@ def delete(request: Request) -> Dict:
     if request.method == "POST":
         if "delete.confirm" in request.POST:
             session.delete(transaction)
-            return HTTPFound(location="/list")
+            return HTTPFound(location="/transaction/")
         else:
             raise HTTPBadRequest()
     return {"transaction": transaction}

@@ -12,7 +12,7 @@ HTML_PARSER = "html.parser"
 
 class TestTransactionCreateView(object):
     def test_get_create(self, testapp):
-        response = testapp.get("/create")
+        response = testapp.get("/transaction/create")
         assert response.status_code == 200
 
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
@@ -27,7 +27,7 @@ class TestTransactionCreateView(object):
 
     def test_post_create(self, testapp):
         testapp.post(
-            "/create",
+            "/transaction/create",
             {
                 "description": "A new transaction",
                 "amount": "-99.99",
@@ -36,7 +36,7 @@ class TestTransactionCreateView(object):
         )
 
         # Check availability
-        response = testapp.get("/detail/1")
+        response = testapp.get("/transaction/1")
         assert response.status_code == 200
         assert "A new transaction" in response.text
         assert "-99.99" in response.text
@@ -44,7 +44,7 @@ class TestTransactionCreateView(object):
     def test_post_invalid_amount(self, testapp):
         """Test posting invalid amount shows error message."""
         response = testapp.post(
-            "/create",
+            "/transaction/create",
             {
                 "description": "A new transaction",
                 "amount": "Not a number",
@@ -61,11 +61,15 @@ class TestTransactionCreateView(object):
     def test_submit_create_form(self, testapp):
         """Create a transaction by filling and submitting the form."""
         # Retrieve the form
-        response = testapp.get("/create", status=200)
+        response = testapp.get(
+            "/transaction/create",
+            status=200,
+        )
         form = response.form
         # Fill the form
         form["description"] = "New Transaction"
         form["amount"] = "100"
+
         # Submit the form
         submit_response = form.submit("create")
         assert submit_response.status_code == 302
@@ -83,7 +87,7 @@ class TestTransactionCreateView(object):
 def example_transactions(testapp):
     """Create example transaction for other views."""
     testapp.post(
-        "/create",
+        "/transaction/create",
         {
             "description": "First transaction",
             "amount": "100.00",
@@ -91,7 +95,7 @@ def example_transactions(testapp):
         status=302,
     )
     testapp.post(
-        "/create",
+        "/transaction/create",
         {
             "description": "Second transaction",
             "amount": "-40.00",
@@ -102,63 +106,67 @@ def example_transactions(testapp):
 
 class TestTransactionListView(object):
     def test_get_list(self, testapp):
-        response = testapp.get("/list")
-
-        assert response.status_code == 200
+        response = testapp.get(
+            "/transaction/",
+            status=200,
+        )
 
     def test_for_links_in_list(self, testapp, example_transactions):
-        response = testapp.get("/list")
+        response = testapp.get(
+            "/transaction/",
+            status=200,
+        )
 
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
-        first_transaction_link = soup.find(href=re.compile("/detail/1"))
+        first_transaction_link = soup.find(href=re.compile("/transaction/1"))
         assert first_transaction_link is not None
-        second_transaction_link = soup.find(href=re.compile("/detail/2"))
+        second_transaction_link = soup.find(href=re.compile("/transaction/2"))
         assert second_transaction_link is not None
-        create_link = soup.find(href=re.compile("/create"))
+        create_link = soup.find(href=re.compile("/transaction/create"))
         assert create_link is not None
 
 
 class TestTransactionDetailView(object):
     """Test for the transaction detail view."""
     def test_404_when_not_exists(self, testapp):
-        testapp.get("/detail/1", status=404)
+        testapp.get("/transaction/1", status=404)
 
     def test_get_detail(self, testapp, example_transactions):
-        testapp.get("/detail/1", status=200)
+        testapp.get("/transaction/1", status=200)
 
     def test_detail_page_content(self, testapp, example_transactions):
-        response = testapp.get("/detail/1", status=200)
+        response = testapp.get("/transaction/1", status=200)
 
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         assert soup.find(id="description").text == "First transaction"
         assert soup.find(id="amount").text == "100.00"
-        update_link = soup.find(href=re.compile("/update/1"))
+        update_link = soup.find(href=re.compile("/transaction/1/update"))
         assert update_link.text == "Update"
-        delete_link = soup.find(href=re.compile("/delete/1"))
+        delete_link = soup.find(href=re.compile("/transaction/1/delete"))
         assert delete_link.text == "Delete"
 
 
 class TestTransactionUpdateView(object):
     """Test for the transaction detail view."""
     def test_404_when_not_exists(self, testapp):
-        testapp.get("/update/1", status=404)
+        testapp.get("/transaction/1/update", status=404)
 
     def test_get_update(self, testapp, example_transactions):
-        testapp.get("/update/1", status=200)
+        testapp.get("/transaction/1/update", status=200)
 
     def test_update_page_content(self, testapp, example_transactions):
-        response = testapp.get("/update/1", status=200)
+        response = testapp.get("/transaction/1/update", status=200)
 
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         assert "Update" in soup.h1.text
         assert soup.find(id="description")["value"] == "First transaction"
         assert soup.find(id="amount")["value"] == "100.00"
-        cancel_link = soup.find(href=re.compile("/detail/1"))
+        cancel_link = soup.find(href=re.compile("/transaction/1"))
         assert cancel_link.text == "Cancel"
 
     def test_post_update_data(self, testapp, example_transactions):
         testapp.post(
-            "/update/1",
+            "/transaction/1/update",
             {
                 "description": "New title",
                 "amount": "99.99",
@@ -167,7 +175,7 @@ class TestTransactionUpdateView(object):
         )
 
         # Change should be visible on detail.
-        response = testapp.get("/detail/1", status=200)
+        response = testapp.get("/transaction/1", status=200)
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         assert soup.find(id="description").text == "New title"
         assert soup.find(id="amount").text == "99.99"
@@ -179,7 +187,7 @@ class TestTransactionUpdateView(object):
     ):
         """Test invalid amount."""
         response = testapp.post(
-            "/update/1",
+            "/transaction/1/update",
             {
                 "description": "New title",
                 "amount": "Not a number",
@@ -199,7 +207,10 @@ class TestTransactionUpdateView(object):
     def test_post_update_with_form(self, testapp, example_transactions):
         """Post with form."""
         # Retrieve the form
-        response = testapp.get("/update/1", status=200)
+        response = testapp.get(
+            "/transaction/1/update",
+            status=200,
+        )
         form = response.form
         # Fill the form
         form["description"] = "New Title"
@@ -222,9 +233,17 @@ class TestTransactionUpdateView(object):
 class TestTransactionDeleteView(object):
     """Functional test for the transaction delete view."""
     def test_get_delete(self, testapp, example_transactions):
-        response = testapp.get("/delete/1")
+        response = testapp.get(
+            "/transaction/1/delete",
+            status=200,
+        )
 
-        assert response.status_code == 200
+    def test_delete_page_content(self, testapp, example_transactions):
+        response = testapp.get(
+            "/transaction/1/delete",
+            status=200,
+        )
+
         soup = bs4.BeautifulSoup(response.body, HTML_PARSER)
         forms = soup.select("form")
         assert len(forms) == 1
@@ -233,12 +252,12 @@ class TestTransactionDeleteView(object):
         assert form["action"] == ""
         assert form.input["name"] == "delete.confirm"
         assert form.input["type"] == "submit"
-        cancel_link = soup.find(href=re.compile("/detail/1"))
+        cancel_link = soup.find(href=re.compile("/transaction/1"))
         assert cancel_link.text == "Cancel"
 
     def test_post_no_data_to_delete_fails(self, testapp, example_transactions):
         """Posting no data to the view should fail."""
-        testapp.post("/delete/1", status=400)
+        testapp.post("/transaction/1/delete", status=400)
 
     def test_post_confirmation_delete_succeeds(
         self,
@@ -247,13 +266,13 @@ class TestTransactionDeleteView(object):
     ):
         """Posting `delete.confirm` to the endpoint should succeed."""
         testapp.post(
-            "/delete/1",
+            "/transaction/1/delete",
             {"delete.confirm": "delete.confirm"},
             status=302,
         )
 
         # Check that detail is not available anymore
-        testapp.get("/detail/1", status=404)
+        testapp.get("/transaction/1", status=404)
 
     def test_form_functionality(self, testapp, example_transactions):
         """
@@ -264,7 +283,10 @@ class TestTransactionDeleteView(object):
         """
 
         # Get form
-        response = testapp.get("/delete/1", status=200)
+        response = testapp.get(
+            "/transaction/1/delete",
+            status=200,
+        )
         form = response.form
 
         # Submitting the form
@@ -272,4 +294,4 @@ class TestTransactionDeleteView(object):
 
         assert response.status_code == 302
         # Check that detail is not available anymore
-        testapp.get("/detail/1", status=404)
+        testapp.get("/transaction/1", status=404)

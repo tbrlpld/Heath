@@ -1,8 +1,10 @@
 def includeme(config):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
-    config.add_route('transaction_create', '/create')
-    config.add_route('transactions_list', '/list')
-    config.add_route('transaction_detail', '/detail/{transaction_id}')
-    config.add_route('transaction_update', '/update/{transaction_id}')
-    config.add_route('transaction_delete', '/delete/{transaction_id}')
+
+    # Transactions
+    config.add_route('transaction.create', '/transaction/create')
+    config.add_route('transaction.list', '/transaction/')
+    config.add_route('transaction.detail', '/transaction/{transaction_id}')
+    config.add_route('transaction.update', '/transaction/{transaction_id}/update')
+    config.add_route('transaction.delete', '/transaction/{transaction_id}/delete')
