@@ -95,12 +95,20 @@ class TransactionView(object):
     @view_config(
         route_name="transaction.create",
         renderer="heath:templates/transactions/create.jinja2",
+        request_method="GET",
     )
-    def create(self) -> Union[Dict, HTTPFound]:
-        if self.request.method == "POST":
-            if self.validate_post_data():
-                self.save_transaction()
-                return HTTPFound(self.request.route_url("transaction.list"))
+    def create_get(self) -> Dict:
+        return self.to_dict()
+
+    @view_config(
+        route_name="transaction.create",
+        renderer="heath:templates/transactions/create.jinja2",
+        request_method="POST",
+    )
+    def create_post(self) -> Union[Dict, HTTPFound]:
+        if self.validate_post_data():
+            self.save_transaction()
+            return HTTPFound(self.request.route_url("transaction.list"))
         return self.to_dict()
 
     @view_config(

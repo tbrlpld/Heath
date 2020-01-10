@@ -59,7 +59,7 @@ class TestTransactionCreateView(object):
         dummy_get_request,
     ):
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_get_request).create()
+        response = TransactionView(dummy_get_request).create_get()
 
         assert response["errors"] == []
 
@@ -70,7 +70,7 @@ class TestTransactionCreateView(object):
         from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPFound
 
-        response = TransactionView(dummy_post_create_request).create()
+        response = TransactionView(dummy_post_create_request).create_post()
         assert isinstance(response, HTTPFound)
 
     def test_creation_in_db(
@@ -81,7 +81,7 @@ class TestTransactionCreateView(object):
         from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPFound
 
-        response = TransactionView(dummy_post_create_request).create()
+        TransactionView(dummy_post_create_request).create_post()
 
         # Verify creation in database
         from heath.models.transaction import Transaction
@@ -99,7 +99,7 @@ class TestTransactionCreateView(object):
         request.POST["amount"] = -100.00
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(request).create()
+        response = TransactionView(request).create_post()
 
         # Redirect after successful creation
         from pyramid.httpexceptions import HTTPFound
@@ -117,15 +117,12 @@ class TestTransactionCreateView(object):
         dbsession_for_unittest,
     ):
         """Test handling when amount is not a number."""
-        request = dummy_post_create_request
-        request.POST["amount"] = "Not a number"
+        dummy_post_create_request.POST["amount"] = "Not a number"
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(request).create()
+        response = TransactionView(dummy_post_create_request).create_post()
 
         assert response["errors"][0] == "Amount has to be a number."
-        assert response["description"] == "New Transaction"
-        assert response["amount"] is None
         # Verify no creation in database
         from heath.models.transaction import Transaction
         first_transaction = dbsession_for_unittest.query(Transaction).first()
