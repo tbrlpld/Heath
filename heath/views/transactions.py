@@ -114,6 +114,7 @@ class TransactionView(object):
     @view_config(
         route_name="transaction.list",
         renderer="heath:templates/transactions/list.jinja2",
+        request_method="GET",
     )
     def list(self) -> Dict:
         self.get_transactions()
@@ -123,6 +124,7 @@ class TransactionView(object):
     @view_config(
         route_name="transaction.detail",
         renderer="heath:templates/transactions/detail.jinja2",
+        request_method="GET",
     )
     def detail(self) -> Dict:
         self.get_transactions()
