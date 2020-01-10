@@ -2,12 +2,13 @@
 
 """Define views regarding transactions."""
 
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.request import Request
 from pyramid.view import view_config
 from sqlalchemy.sql import func
+from sqlalchemy.orm import Session
 
 from heath.models.transaction import Transaction
 
@@ -17,25 +18,56 @@ class TransactionView(object):
 
     def __init__(self, request: Request):
         self.request: Request = request
-        self.dbsession = self.request.dbsession
+        self.dbsession: Session = self.request.dbsession
+
+        self.transaction_id: str = self.request.matchdict.get(
+            "transaction_id",
+            "",
+        )
+        self.transactions: List[Transaction]
+        self.budget: float
+        self.transaction: Transaction
+        self.description: str
+        self.amount: Optional[float]
 
         self.errors: List[str] = []
 
     def get_transactions(self):
-        self.transactions = self.dbsession.query(Transaction).order_by(
-            Transaction.created.desc(),
-        ).all()
+        """
+        Get one or all transactions.
+
+        If a transaction id is retrieved from the request, set the
+        `transaction` (notice the singular) to the corresponding `Transaction`
+        object.
+
+        If no transaction id is retrieved from the request, set the
+        `transactions` (notice the plural) attribute to a list containing all
+        transactions.
+        """
+        if self.transaction_id:
+            self.transaction: Transaction = self.dbsession.query(
+                Transaction,
+            ).filter_by(
+                id=self.transaction_id,
+            ).first()
+        else:
+            self.transactions: List[Transaction] = self.dbsession.query(
+                Transaction,
+            ).order_by(
+                Transaction.created.desc(),
+            ).all()
+
 
     def get_budget(self):
-        budget = self.dbsession.query(
+        retrieved_budget = self.dbsession.query(
             func.sum(Transaction.amount),
         ).scalar()
-        self.budget = budget or 0.0
+        self.budget = retrieved_budget or 0.0
 
     def get_post_data(self):
         """Save the values from POST to view object."""
-        self.description = self.request.POST.get("description")
-        self.amount = self.request.POST.get("amount")
+        self.description = self.request.POST.get("description", "")
+        self.amount = self.request.POST.get("amount", "")
 
     def validate_data(self) -> bool:
         """Validate data. Return True or False. Set error message."""
@@ -47,13 +79,13 @@ class TransactionView(object):
         return True
 
     def save_transaction(self):
-        transaction = Transaction(
+        transaction: Transaction = Transaction(
             description=self.description,
             amount=self.amount,
         )
         self.dbsession.add(transaction)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict:
         return self.__dict__
 
     # View Methods
@@ -62,7 +94,7 @@ class TransactionView(object):
         route_name="transaction.create",
         renderer="heath:templates/transactions/create.jinja2",
     )
-    def create(self) -> Dict:
+    def create(self) -> Union[Dict, HTTPFound]:
         if self.request.method == "POST":
             self.get_post_data()
             if self.validate_data():
@@ -79,22 +111,15 @@ class TransactionView(object):
         self.get_budget()
         return self.to_dict()
 
-
     @view_config(
         route_name="transaction.detail",
         renderer="heath:templates/transactions/detail.jinja2",
     )
     def detail(self) -> Dict:
-        transaction_id = self.request.matchdict.get("transaction_id")
-
-        transaction = self.request.dbsession.query(Transaction).filter_by(
-            id=transaction_id,
-        ).first()
-
-        if not transaction:
+        self.get_transactions()
+        if not self.transaction:
             raise HTTPNotFound()
-        return {"transaction": transaction}
-
+        return self.to_dict()
 
     @view_config(
         route_name="transaction.update",
