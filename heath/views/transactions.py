@@ -92,7 +92,7 @@ def update(request: Request) -> Dict:
             return return_data
         else:
             transaction.description = request.POST["description"]
-            return HTTPFound(location="/transaction/")
+            return HTTPFound(request.route_url("transaction.list"))
     return return_data
 
 
@@ -111,7 +111,7 @@ def delete(request: Request) -> Dict:
     if request.method == "POST":
         if "delete.confirm" in request.POST:
             session.delete(transaction)
-            return HTTPFound(location="/transaction/")
+            return HTTPFound(request.route_url("transaction.list"))
         else:
             raise HTTPBadRequest()
     return {"transaction": transaction}
