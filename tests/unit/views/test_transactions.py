@@ -329,7 +329,7 @@ class TestTransactionDeleteView(object):
         from pyramid.httpexceptions import HTTPNotFound
         from heath.views.transactions import TransactionView
         with pytest.raises(HTTPNotFound):
-            TransactionView(dummy_get_request).delete()
+            TransactionView(dummy_get_request).delete_get()
 
     def test_return_transaction_when_post_wo_payload(
         self,
@@ -339,7 +339,7 @@ class TestTransactionDeleteView(object):
         dummy_get_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_get_request).delete()
+        response = TransactionView(dummy_get_request).delete_get()
 
         assert "transaction" in response
         assert response["transaction"].id == 1
@@ -350,7 +350,7 @@ class TestTransactionDeleteView(object):
     # This is just a little extra requirement to prevent posts to the delete
     # endpoints resulting automatically in deletion of the objects
     # Empty posts should not delete an object.
-    def test_empty_post_leads_to_bad_reqeust(
+    def test_empty_post_leads_to_bad_request(
         self,
         dummy_post_request,
         example_transactions,
@@ -360,7 +360,7 @@ class TestTransactionDeleteView(object):
         from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPBadRequest
         with pytest.raises(HTTPBadRequest):
-            TransactionView(dummy_post_request).delete()
+            TransactionView(dummy_post_request).delete_post()
 
     def test_empty_post_not_deleteting_transaction(
         self,
@@ -374,7 +374,7 @@ class TestTransactionDeleteView(object):
         from heath.views.transactions import TransactionView
         # Exception needs to be caught to not fail the test
         with pytest.raises(HTTPBadRequest):
-            TransactionView(dummy_post_request).delete()
+            TransactionView(dummy_post_request).delete_post()
 
         # Check that transaction still exists
         from heath.models.transaction import Transaction
@@ -393,7 +393,7 @@ class TestTransactionDeleteView(object):
         dummy_post_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        TransactionView(dummy_post_request).delete()
+        TransactionView(dummy_post_request).delete_post()
 
         # Check persistence in database
         from heath.models.transaction import Transaction
@@ -411,7 +411,7 @@ class TestTransactionDeleteView(object):
         dummy_post_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_post_request).delete()
+        response = TransactionView(dummy_post_request).delete_post()
 
         from pyramid.httpexceptions import HTTPFound
         assert isinstance(response, HTTPFound)

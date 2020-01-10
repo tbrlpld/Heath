@@ -149,7 +149,7 @@ class TransactionView(object):
         renderer="heath:templates/transactions/edit.jinja2",
         request_method="POST",
     )
-    def update_post(self) -> Dict:
+    def update_post(self) -> Union[Dict, HTTPFound]:
         self.get_transactions()
         if not self.transaction:
             raise HTTPNotFound()
@@ -162,15 +162,25 @@ class TransactionView(object):
     @view_config(
         route_name="transaction.delete",
         renderer="heath:templates/transactions/delete.jinja2",
+        request_method="GET",
     )
-    def delete(self) -> Dict:
+    def delete_get(self) -> Dict:
+        self.get_transactions()
+        if not self.transaction:
+            raise HTTPNotFound()
+        return self.to_dict()
+
+    @view_config(
+        route_name="transaction.delete",
+        renderer="heath:templates/transactions/delete.jinja2",
+        request_method="POST",
+    )
+    def delete_post(self) -> HTTPFound:
         self.get_transactions()
         if not self.transaction:
             raise HTTPNotFound()
 
-        if self.request.method == "POST":
-            if self.confirmed_deletion():
-                return HTTPFound(self.request.route_url("transaction.list"))
-            else:
-                raise HTTPBadRequest()
-        return self.to_dict()
+        if self.confirmed_deletion():
+            return HTTPFound(self.request.route_url("transaction.list"))
+        else:
+            raise HTTPBadRequest()
