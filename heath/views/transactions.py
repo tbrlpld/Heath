@@ -21,6 +21,17 @@ class TransactionView(object):
 
         self.errors: List[str] = []
 
+    def get_transactions(self):
+        self.transactions = self.dbsession.query(Transaction).order_by(
+            Transaction.created.desc(),
+        ).all()
+
+    def get_budget(self):
+        budget = self.dbsession.query(
+            func.sum(Transaction.amount),
+        ).scalar()
+        self.budget = budget or 0.0
+
     def get_post_data(self):
         """Save the values from POST to view object."""
         self.description = self.request.POST.get("description")
@@ -64,14 +75,9 @@ class TransactionView(object):
         renderer="heath:templates/transactions/list.jinja2",
     )
     def list(self) -> Dict:
-        dbsession = self.request.dbsession
-        query = dbsession.query(Transaction)
-        transactions = query.order_by(Transaction.created.desc()).all()
-        budget = dbsession.query(func.sum(Transaction.amount)).scalar()
-        return {
-            "transactions": transactions,
-            "budget": budget or 0.0,
-        }
+        self.get_transactions()
+        self.get_budget()
+        return self.to_dict()
 
 
     @view_config(
