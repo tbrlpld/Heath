@@ -28,3 +28,10 @@ class TestAccountAddPage(object):
         submit_response = form.submit("create")
 
         assert submit_response.status_code == 302
+
+    def test_cancel_link_exists_on_create_page(sefl, testapp):
+        response = testapp.get("/accounts/add", status=200)
+
+        soup = BeautifulSoup(response.text, HTML_PARSER)
+        cancel_link = soup.find("a", text="Cancel")
+        assert cancel_link is not None
