@@ -2,7 +2,18 @@
 
 {% block content %}
 <div class="content">
-  <h1>Welcome to Heath <small>Your Personal Ledger App</small></h1>
-  <p class="lead">Welcome to <span class="font-normal">{{project}}</span>, a&nbsp;Pyramid application generated&nbsp;by<br><span class="font-normal">Cookiecutter</span>.</p>
+  <h1>Hello there,</h1>
+  <p class="lead">This is your home on the app.</p>
+  <h2>Your Accounts</h2>
+  {% if accounts %}
+    <ul>
+      {% for account in accounts %}
+      <li>{{ account.name }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You don't have any accounts yet.</p>
+    <a href="{{ request.route_url('accounts.create') }}">Create Your First Account</a>
+  {% endif %}
 </div>
 {% endblock content %}

@@ -24,11 +24,11 @@
   </head>
 
   <body>
-    <div class="container">
+    <div class="container text-center">
       <nav>
         <ul>
+          <li><a href="{{ request.route_url('landing') }}">Heath</a></li>
           <li><a href="{{ request.route_url('home') }}">Home</a></li>
-          <li><a href="{{ request.route_url('transaction.list') }}">Transactions</a></li>
         </ul>
       </nav>
       {% block content %}

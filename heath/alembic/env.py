@@ -42,7 +42,11 @@ def run_migrations_online():
     connection = engine.connect()
     context.configure(
         connection=connection,
-        target_metadata=target_metadata
+        target_metadata=target_metadata,
+        # To allow "altering" of existing tables and columns in SQLite,
+        # these have to be done as "batch" migrations.
+        # See also: https://alembic.sqlalchemy.org/en/latest/batch.html
+        render_as_batch=True,
     )
 
     try:

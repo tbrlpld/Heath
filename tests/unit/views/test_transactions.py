@@ -27,18 +27,6 @@ def example_transactions(dbsession_for_unittest):
     )
 
 
-@pytest.fixture
-def dummy_get_request(dbsession_for_unittest):
-    """Return a dummy request with the dbsession attached to it."""
-    return dummy_request(dbsession=dbsession_for_unittest)
-
-
-@pytest.fixture
-def dummy_post_request(dbsession_for_unittest):
-    """Return a dummy request with empty payload the dbsession attached."""
-    return dummy_request(dbsession=dbsession_for_unittest, post={})
-
-
 class TestTransactionCreateView(object):
     """Test for the create view."""
 

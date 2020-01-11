@@ -46,3 +46,15 @@ def dummy_request(dbsession, **kwargs):
     # will always return a valid path.
     dummy_request.route_url = lambda *_, **__: "/"
     return dummy_request
+
+
+@pytest.fixture
+def dummy_get_request(dbsession_for_unittest):
+    """Return a dummy request with the dbsession attached to it."""
+    return dummy_request(dbsession=dbsession_for_unittest)
+
+
+@pytest.fixture
+def dummy_post_request(dbsession_for_unittest):
+    """Return a dummy request with empty payload the dbsession attached."""
+    return dummy_request(dbsession=dbsession_for_unittest, post={})
