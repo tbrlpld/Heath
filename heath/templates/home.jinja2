@@ -13,7 +13,7 @@
     </ul>
   {% else %}
     <p>You don't have any accounts yet.</p>
-    <a href="{{ request.route_url('accounts.add') }}">Create Your First Account</a>
+    <a href="{{ request.route_url('accounts.create') }}">Create Your First Account</a>
   {% endif %}
 </div>
 {% endblock content %}

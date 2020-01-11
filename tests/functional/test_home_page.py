@@ -16,7 +16,7 @@ EXAMPLE_ACCOUNT_NAME = "An Account Name"
 @pytest.fixture
 def example_account(testapp):
     testapp.post(
-        "/accounts/add",
+        "/accounts/create",
         {
             "name": EXAMPLE_ACCOUNT_NAME,
         },
@@ -39,7 +39,7 @@ class TestHomePage(object):
         response = testapp.get("/home", status=200)
 
         soup = BeautifulSoup(response.text, HTML_PARSER)
-        add_account_link = soup.find("a", href=re.compile("/accounts/add"))
+        add_account_link = soup.find("a", href=re.compile("/accounts/create"))
         assert add_account_link is not None
         assert add_account_link.text != ""
 

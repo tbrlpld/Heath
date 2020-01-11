@@ -61,7 +61,7 @@ class AccountViews(object):
     # View Methods
 
     @view_config(
-        route_name="accounts.add",
+        route_name="accounts.create",
         renderer="heath:templates/accounts/create.jinja2",
         request_method="GET",
     )
@@ -69,7 +69,7 @@ class AccountViews(object):
         return self.to_dict()
 
     @view_config(
-        route_name="accounts.add",
+        route_name="accounts.create",
         renderer="heath:templates/accounts/create.jinja2",
         request_method="POST",
     )

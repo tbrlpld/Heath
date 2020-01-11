@@ -5,7 +5,7 @@
 
 def account_routes(config):
     """Define only account related routes."""
-    config.add_route('accounts.add', '/add')
+    config.add_route('accounts.create', '/create')
 
 
 def transaction_routes(config):
