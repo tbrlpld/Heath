@@ -42,6 +42,10 @@ class TransactionView(object):
         If no transaction id is retrieved from the request, set the
         `transactions` (notice the plural) attribute to a list containing all
         transactions.
+
+        Raises:
+            HTTPNotFound: If a transaction id was requested but could not be
+                found in the database HTTPNotFound is raised.
         """
         if self.transaction_id:
             self.transaction: Transaction = self.dbsession.query(
@@ -49,6 +53,8 @@ class TransactionView(object):
             ).filter_by(
                 id=self.transaction_id,
             ).first()
+            if not self.transaction:
+                raise HTTPNotFound()
         else:
             self.transactions: List[Transaction] = self.dbsession.query(
                 Transaction,
@@ -128,8 +134,6 @@ class TransactionView(object):
     )
     def detail(self) -> Dict:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
         return self.to_dict()
 
     @view_config(
@@ -139,9 +143,6 @@ class TransactionView(object):
     )
     def update_get(self) -> Dict:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
-
         return self.to_dict()
 
     @view_config(
@@ -151,9 +152,6 @@ class TransactionView(object):
     )
     def update_post(self) -> Union[Dict, HTTPFound]:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
-
         if self.validate_post_data():
             self.save_transaction()
             return HTTPFound(self.request.route_url("transaction.list"))
@@ -166,8 +164,6 @@ class TransactionView(object):
     )
     def delete_get(self) -> Dict:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
         return self.to_dict()
 
     @view_config(
@@ -177,9 +173,6 @@ class TransactionView(object):
     )
     def delete_post(self) -> HTTPFound:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
-
         if self.confirmed_deletion():
             return HTTPFound(self.request.route_url("transaction.list"))
         else:

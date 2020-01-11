@@ -242,10 +242,10 @@ class TestTransactionUpdateView(object):
         dummy_get_request,
     ):
         """Test for get to not existing id."""
-        dummy_get_request.matchdict["transactions_id"] = 1
+        dummy_get_request.matchdict["transaction_id"] = 1
 
-        from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPNotFound
+        from heath.views.transactions import TransactionView
         with pytest.raises(HTTPNotFound):
             TransactionView(dummy_get_request).update_get()
 
