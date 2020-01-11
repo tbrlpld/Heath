@@ -25,3 +25,4 @@ class TestHomePage(object):
         soup = BeautifulSoup(response.text, HTML_PARSER)
         add_account_link = soup.find("a", href=re.compile("/accounts/add"))
         assert add_account_link is not None
+        assert add_account_link.text != ""
