@@ -4,5 +4,5 @@
 
 
 class TestHome(object):
-    def test_get_home(self, testapp):
+    def test_get_landing(self, testapp):
         testapp.get("/", status=200)
