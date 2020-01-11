@@ -24,4 +24,4 @@ def includeme(config):
     config.add_route('home', '/home')
 
     config.include(account_routes, route_prefix="/accounts/")
-    config.include(transaction_routes, route_prefix="/transaction/")
+    config.include(transaction_routes, route_prefix="/transactions/")
