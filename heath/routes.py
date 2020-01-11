@@ -3,6 +3,11 @@
 """Define routes of the application."""
 
 
+def account_routes(config):
+    """Define only account related routes."""
+    config.add_route('accounts.add', '/add')
+
+
 def transaction_routes(config):
     """Define only transaction related routes."""
     config.add_route('transaction.create', '/create')
@@ -18,4 +23,5 @@ def includeme(config):
     config.add_route('landing', '/')
     config.add_route('home', '/home')
 
+    config.include(account_routes, route_prefix="/accounts/")
     config.include(transaction_routes, route_prefix="/transaction/")

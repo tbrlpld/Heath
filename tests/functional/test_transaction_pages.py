@@ -6,8 +6,7 @@ import bs4
 import pytest
 import re
 
-
-HTML_PARSER = "html.parser"
+from tests.functional.conftest import HTML_PARSER
 
 
 class TestTransactionCreateView(object):

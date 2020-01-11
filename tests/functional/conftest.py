@@ -6,6 +6,9 @@ import pytest
 from pyramid import testing
 
 
+HTML_PARSER = "html.parser"
+
+
 @pytest.fixture
 def app():
     config = testing.setUp(settings={
