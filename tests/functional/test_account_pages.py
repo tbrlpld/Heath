@@ -29,9 +29,20 @@ class TestAccountAddPage(object):
 
         assert submit_response.status_code == 302
 
-    def test_cancel_link_exists_on_create_page(sefl, testapp):
+    def test_cancel_link_exists_on_create_page(self, testapp):
         response = testapp.get("/accounts/add", status=200)
 
         soup = BeautifulSoup(response.text, HTML_PARSER)
         cancel_link = soup.find("a", text="Cancel")
         assert cancel_link is not None
+
+    def test_cancel_links_to_home_if_visited_directy(self, testapp):
+        response = testapp.get("/accounts/add", status=200)
+
+        soup = BeautifulSoup(response.text, HTML_PARSER)
+        cancel_link = soup.find("a", text="Cancel")
+        assert cancel_link is not None
+        assert "/home" in cancel_link["href"]
+
+    # TODO: Cancel link goes to previous page (referrer) if visited from
+    #       somewhere and not directly.
