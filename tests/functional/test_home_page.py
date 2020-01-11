@@ -2,10 +2,26 @@
 
 """Functional tests for the landing page."""
 
-from bs4 import BeautifulSoup
 import re
 
+from bs4 import BeautifulSoup
+import pytest
+
 from tests.functional.conftest import HTML_PARSER
+
+
+EXAMPLE_ACCOUNT_NAME = "An Account Name"
+
+
+@pytest.fixture
+def example_account(testapp):
+    testapp.post(
+        "/accounts/add",
+        {
+            "name": EXAMPLE_ACCOUNT_NAME,
+        },
+        status=302,
+    )
 
 
 class TestHomePage(object):
@@ -26,3 +42,15 @@ class TestHomePage(object):
         add_account_link = soup.find("a", href=re.compile("/accounts/add"))
         assert add_account_link is not None
         assert add_account_link.text != ""
+
+    def test_existing_accounts_are_shown_on_home(
+        self,
+        testapp,
+        example_account,
+    ):
+        response = testapp.get("/home", status=200)
+
+        soup = BeautifulSoup(response.text, HTML_PARSER)
+        account_name_element = soup.find(text=EXAMPLE_ACCOUNT_NAME)
+        assert account_name_element is not None
+

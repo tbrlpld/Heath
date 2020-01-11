@@ -29,6 +29,31 @@ class TestAccountAddPage(object):
 
         assert submit_response.status_code == 302
 
+    def test_submitting_form_redirects_to_page_that_shows_account(
+        self,
+        testapp,
+    ):
+        get_response = testapp.get("/accounts/add", status=200)
+        form = get_response.form
+        form["name"] = "An Account Name"
+
+        # Submit the form and follow redirect
+        submit_response = form.submit("create")
+        follow_response = submit_response.follow()
+
+        soup = BeautifulSoup(follow_response.text, HTML_PARSER)
+        account_name_element = soup.find(text="An Account Name")
+        assert account_name_element is not None
+
+    def test_correct_post_leads_to_redirect(self, testapp):
+        testapp.post(
+            "/accounts/add",
+            {
+                "name": "An Account Name",
+            },
+            status=302,
+        )
+
     def test_cancel_link_exists_on_create_page(self, testapp):
         response = testapp.get("/accounts/add", status=200)
 
@@ -46,3 +71,4 @@ class TestAccountAddPage(object):
 
     # TODO: Cancel link goes to previous page (referrer) if visited from
     #       somewhere and not directly.
+

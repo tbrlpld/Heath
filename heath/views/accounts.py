@@ -20,8 +20,40 @@ class AccountViews(object):
         self.request: Request = request
         self.dbsession: Session = self.request.dbsession
 
+        self.name: str
+
         self.errors: List[str] = []
 
+    def validate_post_data(self):
+        """
+        Validate the post data.
+
+        Extracts the required data from the post request and saved the values
+        into the corresponding attributes.
+
+        Returns:
+            bool: True if post data is valid, False otherwise.
+
+        Raises:
+            HTTPBadRequest: Raised if keys are missing. So far only "name" is
+                required.
+
+        """
+        name = self.request.POST.get("name", None)
+        if name is None:
+            raise HTTPBadRequest()
+        if name == "":
+            self.errors.append("Name can not be empty.")
+            return False
+        else:
+            self.name = name
+            return True
+
+    def save_account(self):
+        """Save account from the current view state."""
+        account = Account()
+        account.name = self.name
+        self.request.dbsession.add(account)
 
     def to_dict(self) -> Dict:
         return self.__dict__
@@ -30,20 +62,21 @@ class AccountViews(object):
 
     @view_config(
         route_name="accounts.add",
-        renderer="heath:templates/accounts/add.jinja2",
+        renderer="heath:templates/accounts/create.jinja2",
         request_method="GET",
     )
-    def add_get(self) -> Dict:
+    def create_get(self) -> Dict:
         return self.to_dict()
 
     @view_config(
         route_name="accounts.add",
-        renderer="heath:templates/accounts/add.jinja2",
+        renderer="heath:templates/accounts/create.jinja2",
         request_method="POST",
     )
-    def add_post(self) -> Union[Dict, HTTPFound]:
-        # if self.validate_post_data():
-        #     self.save_transaction()
-        return HTTPFound(self.request.route_url("home"))
+    def create_post(self) -> Union[Dict, HTTPFound]:
+        if self.validate_post_data():
+            self.save_account()
+            return HTTPFound(self.request.route_url("home"))
+        return self.to_dict()
 
 
