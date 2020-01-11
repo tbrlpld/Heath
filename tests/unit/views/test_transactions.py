@@ -27,18 +27,6 @@ def example_transactions(dbsession_for_unittest):
     )
 
 
-@pytest.fixture
-def dummy_get_request(dbsession_for_unittest):
-    """Return a dummy request with the dbsession attached to it."""
-    return dummy_request(dbsession=dbsession_for_unittest)
-
-
-@pytest.fixture
-def dummy_post_request(dbsession_for_unittest):
-    """Return a dummy request with empty payload the dbsession attached."""
-    return dummy_request(dbsession=dbsession_for_unittest, post={})
-
-
 class TestTransactionCreateView(object):
     """Test for the create view."""
 
@@ -59,7 +47,7 @@ class TestTransactionCreateView(object):
         dummy_get_request,
     ):
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_get_request).create()
+        response = TransactionView(dummy_get_request).create_get()
 
         assert response["errors"] == []
 
@@ -70,7 +58,7 @@ class TestTransactionCreateView(object):
         from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPFound
 
-        response = TransactionView(dummy_post_create_request).create()
+        response = TransactionView(dummy_post_create_request).create_post()
         assert isinstance(response, HTTPFound)
 
     def test_creation_in_db(
@@ -81,7 +69,7 @@ class TestTransactionCreateView(object):
         from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPFound
 
-        response = TransactionView(dummy_post_create_request).create()
+        TransactionView(dummy_post_create_request).create_post()
 
         # Verify creation in database
         from heath.models.transaction import Transaction
@@ -99,7 +87,7 @@ class TestTransactionCreateView(object):
         request.POST["amount"] = -100.00
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(request).create()
+        response = TransactionView(request).create_post()
 
         # Redirect after successful creation
         from pyramid.httpexceptions import HTTPFound
@@ -117,15 +105,12 @@ class TestTransactionCreateView(object):
         dbsession_for_unittest,
     ):
         """Test handling when amount is not a number."""
-        request = dummy_post_create_request
-        request.POST["amount"] = "Not a number"
+        dummy_post_create_request.POST["amount"] = "Not a number"
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(request).create()
+        response = TransactionView(dummy_post_create_request).create_post()
 
         assert response["errors"][0] == "Amount has to be a number."
-        assert response["description"] == "New Transaction"
-        assert response["amount"] is None
         # Verify no creation in database
         from heath.models.transaction import Transaction
         first_transaction = dbsession_for_unittest.query(Transaction).first()
@@ -245,12 +230,12 @@ class TestTransactionUpdateView(object):
         dummy_get_request,
     ):
         """Test for get to not existing id."""
-        dummy_get_request.matchdict["transactions_id"] = 1
+        dummy_get_request.matchdict["transaction_id"] = 1
 
-        from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPNotFound
+        from heath.views.transactions import TransactionView
         with pytest.raises(HTTPNotFound):
-            TransactionView(dummy_get_request).update()
+            TransactionView(dummy_get_request).update_get()
 
     def test_return_transaction_on_get(
         self,
@@ -260,7 +245,7 @@ class TestTransactionUpdateView(object):
         dummy_get_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_get_request).update()
+        response = TransactionView(dummy_get_request).update_get()
 
         assert "transaction" in response
         assert response["transaction"].id == 1
@@ -274,7 +259,7 @@ class TestTransactionUpdateView(object):
         dbsession_for_unittest,
     ):
         from heath.views.transactions import TransactionView
-        TransactionView(dummy_post_update_request).update()
+        TransactionView(dummy_post_update_request).update_post()
 
         # Check persistence in database
         from heath.models.transaction import Transaction
@@ -289,7 +274,7 @@ class TestTransactionUpdateView(object):
         example_transactions,
     ):
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_post_update_request).update()
+        response = TransactionView(dummy_post_update_request).update_post()
 
         from pyramid.httpexceptions import HTTPFound
         assert isinstance(response, HTTPFound)
@@ -304,7 +289,7 @@ class TestTransactionUpdateView(object):
         dummy_post_update_request.POST["amount"] = "Not a number"
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_post_update_request).update()
+        response = TransactionView(dummy_post_update_request).update_post()
 
         # Data is returned into the form
         assert response["errors"][0] == "Amount has to be a number."
@@ -332,7 +317,7 @@ class TestTransactionDeleteView(object):
         from pyramid.httpexceptions import HTTPNotFound
         from heath.views.transactions import TransactionView
         with pytest.raises(HTTPNotFound):
-            TransactionView(dummy_get_request).delete()
+            TransactionView(dummy_get_request).delete_get()
 
     def test_return_transaction_when_post_wo_payload(
         self,
@@ -342,7 +327,7 @@ class TestTransactionDeleteView(object):
         dummy_get_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_get_request).delete()
+        response = TransactionView(dummy_get_request).delete_get()
 
         assert "transaction" in response
         assert response["transaction"].id == 1
@@ -353,7 +338,7 @@ class TestTransactionDeleteView(object):
     # This is just a little extra requirement to prevent posts to the delete
     # endpoints resulting automatically in deletion of the objects
     # Empty posts should not delete an object.
-    def test_empty_post_leads_to_bad_reqeust(
+    def test_empty_post_leads_to_bad_request(
         self,
         dummy_post_request,
         example_transactions,
@@ -363,7 +348,7 @@ class TestTransactionDeleteView(object):
         from heath.views.transactions import TransactionView
         from pyramid.httpexceptions import HTTPBadRequest
         with pytest.raises(HTTPBadRequest):
-            TransactionView(dummy_post_request).delete()
+            TransactionView(dummy_post_request).delete_post()
 
     def test_empty_post_not_deleteting_transaction(
         self,
@@ -377,7 +362,7 @@ class TestTransactionDeleteView(object):
         from heath.views.transactions import TransactionView
         # Exception needs to be caught to not fail the test
         with pytest.raises(HTTPBadRequest):
-            TransactionView(dummy_post_request).delete()
+            TransactionView(dummy_post_request).delete_post()
 
         # Check that transaction still exists
         from heath.models.transaction import Transaction
@@ -396,7 +381,7 @@ class TestTransactionDeleteView(object):
         dummy_post_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        TransactionView(dummy_post_request).delete()
+        TransactionView(dummy_post_request).delete_post()
 
         # Check persistence in database
         from heath.models.transaction import Transaction
@@ -414,7 +399,7 @@ class TestTransactionDeleteView(object):
         dummy_post_request.matchdict["transaction_id"] = 1
 
         from heath.views.transactions import TransactionView
-        response = TransactionView(dummy_post_request).delete()
+        response = TransactionView(dummy_post_request).delete_post()
 
         from pyramid.httpexceptions import HTTPFound
         assert isinstance(response, HTTPFound)

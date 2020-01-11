@@ -3,6 +3,11 @@
 """Define routes of the application."""
 
 
+def account_routes(config):
+    """Define only account related routes."""
+    config.add_route('accounts.create', '/create')
+
+
 def transaction_routes(config):
     """Define only transaction related routes."""
     config.add_route('transaction.create', '/create')
@@ -15,6 +20,8 @@ def transaction_routes(config):
 def includeme(config):
     """Pull route configuration together."""
     config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('home', '/')
+    config.add_route('landing', '/')
+    config.add_route('home', '/home')
 
-    config.include(transaction_routes, route_prefix="/transaction/")
+    config.include(account_routes, route_prefix="/accounts/")
+    config.include(transaction_routes, route_prefix="/transactions/")

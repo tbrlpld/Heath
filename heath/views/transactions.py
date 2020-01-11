@@ -42,6 +42,10 @@ class TransactionView(object):
         If no transaction id is retrieved from the request, set the
         `transactions` (notice the plural) attribute to a list containing all
         transactions.
+
+        Raises:
+            HTTPNotFound: If a transaction id was requested but could not be
+                found in the database HTTPNotFound is raised.
         """
         if self.transaction_id:
             self.transaction: Transaction = self.dbsession.query(
@@ -49,6 +53,8 @@ class TransactionView(object):
             ).filter_by(
                 id=self.transaction_id,
             ).first()
+            if not self.transaction:
+                raise HTTPNotFound()
         else:
             self.transactions: List[Transaction] = self.dbsession.query(
                 Transaction,
@@ -95,17 +101,26 @@ class TransactionView(object):
     @view_config(
         route_name="transaction.create",
         renderer="heath:templates/transactions/create.jinja2",
+        request_method="GET",
     )
-    def create(self) -> Union[Dict, HTTPFound]:
-        if self.request.method == "POST":
-            if self.validate_post_data():
-                self.save_transaction()
-                return HTTPFound(self.request.route_url("transaction.list"))
+    def create_get(self) -> Dict:
+        return self.to_dict()
+
+    @view_config(
+        route_name="transaction.create",
+        renderer="heath:templates/transactions/create.jinja2",
+        request_method="POST",
+    )
+    def create_post(self) -> Union[Dict, HTTPFound]:
+        if self.validate_post_data():
+            self.save_transaction()
+            return HTTPFound(self.request.route_url("transaction.list"))
         return self.to_dict()
 
     @view_config(
         route_name="transaction.list",
         renderer="heath:templates/transactions/list.jinja2",
+        request_method="GET",
     )
     def list(self) -> Dict:
         self.get_transactions()
@@ -115,41 +130,50 @@ class TransactionView(object):
     @view_config(
         route_name="transaction.detail",
         renderer="heath:templates/transactions/detail.jinja2",
+        request_method="GET",
     )
     def detail(self) -> Dict:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
         return self.to_dict()
 
     @view_config(
         route_name="transaction.update",
         renderer="heath:templates/transactions/edit.jinja2",
+        request_method="GET",
     )
-    def update(self) -> Dict:
+    def update_get(self) -> Dict:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
-
-        if self.request.method == "POST":
-            if self.validate_post_data():
-                self.save_transaction()
-                return HTTPFound(self.request.route_url("transaction.list"))
         return self.to_dict()
 
+    @view_config(
+        route_name="transaction.update",
+        renderer="heath:templates/transactions/edit.jinja2",
+        request_method="POST",
+    )
+    def update_post(self) -> Union[Dict, HTTPFound]:
+        self.get_transactions()
+        if self.validate_post_data():
+            self.save_transaction()
+            return HTTPFound(self.request.route_url("transaction.list"))
+        return self.to_dict()
 
     @view_config(
         route_name="transaction.delete",
         renderer="heath:templates/transactions/delete.jinja2",
+        request_method="GET",
     )
-    def delete(self) -> Dict:
+    def delete_get(self) -> Dict:
         self.get_transactions()
-        if not self.transaction:
-            raise HTTPNotFound()
-
-        if self.request.method == "POST":
-            if self.confirmed_deletion():
-                return HTTPFound(self.request.route_url("transaction.list"))
-            else:
-                raise HTTPBadRequest()
         return self.to_dict()
+
+    @view_config(
+        route_name="transaction.delete",
+        renderer="heath:templates/transactions/delete.jinja2",
+        request_method="POST",
+    )
+    def delete_post(self) -> HTTPFound:
+        self.get_transactions()
+        if self.confirmed_deletion():
+            return HTTPFound(self.request.route_url("transaction.list"))
+        else:
+            raise HTTPBadRequest()
